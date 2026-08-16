@@ -1,0 +1,1059 @@
+<h1>Unit 1 — Introduction & Network Models</h1>
+<p class="unit-lead">CSE306: Computer Networks — Unit I covers the complete foundation of computer networking: definitions, data communication, performance metrics, delays, diagnostics, hardware, architecture, topologies, protocols, the OSI 7-layer model, and the TCP/IP protocol suite.</p>
+
+<hr>
+
+<section class="doc-section">
+  <h2 id="1-computer-networks">1. Computer Networks</h2>
+
+  <h3 id="11-what-is-a-computer-network">1.1 What is a Computer Network?</h3>
+  <p>A computer network is a collection of autonomous, interconnected computing devices that communicate with each other over shared physical or wireless transmission media using standardized protocols to exchange data and share resources.</p>
+
+  <p><img src="subjects/computer-networks/images/basic-network-diagram.jpg" alt="Basic Computer Network Architecture"></p>
+
+  <p>The interconnected devices (hosts, switches, routers, servers) communicate by packetizing data and forwarding it across point-to-point or multi-access communication links.</p>
+
+  <h3 id="12-core-goals-purposes-of-computer-networks">1.2 Core Goals &amp; Purposes of Computer Networks</h3>
+  <div class="callout callout-info">
+    <p><strong>1. Resource Sharing:</strong> Allows multiple clients to share expensive physical hardware resources (high-throughput printers, storage arrays, compute clusters, GPU pools).</p>
+    <p><strong>2. Data Sharing:</strong> Enables seamless transfer and collaborative access to files, centralized databases, and distributed media streams.</p>
+    <p><strong>3. Communication:</strong> Low-latency human-to-human and machine-to-machine exchange (email, messaging, VoIP, video conferencing, IoT telemetry).</p>
+    <p><strong>4. Remote Access:</strong> Employees and system administrators can securely operate internal corporate services and terminals from arbitrary remote locations.</p>
+    <p><strong>5. High Reliability &amp; Redundancy:</strong> Replicating services across multiple nodes prevents single points of failure, ensuring high availability.</p>
+    <p><strong>6. Scalability &amp; Cost Reduction:</strong> Workloads can be distributed across modular commodity hardware rather than requiring monolithic mainframe systems.</p>
+  </div>
+</section>
+
+<hr>
+
+<section class="doc-section">
+  <h2 id="2-data-communication-basics">2. Data Communication Basics</h2>
+
+  <h3 id="21-what-is-data-communication">2.1 What is Data Communication?</h3>
+  <p>Data communication is the electronic transfer of data represented in digital or analog form between two communicating endpoints across an intermediary transmission path.</p>
+
+  <pre><code>Sender ─────────[ Transmission Medium ]─────────→ Receiver
+                    (Rule: Protocol)</code></pre>
+
+  <p>For successful communication to occur, data delivery must satisfy four fundamental criteria:</p>
+  <ul>
+    <li><strong>Delivery:</strong> Data must arrive at the correct intended destination host and process.</li>
+    <li><strong>Accuracy:</strong> Data must arrive unaltered without uncorrected bit errors.</li>
+    <li><strong>Timeliness:</strong> Data must arrive within acceptable delay bounds (especially for real-time video/audio).</li>
+    <li><strong>Jitter:</strong> Packet arrival variance must remain minimal to avoid buffer under-runs.</li>
+  </ul>
+
+  <p><img src="subjects/computer-networks/images/data-communication-components.jpg" alt="5 Components of Data Communication System"></p>
+
+  <h3 id="22-five-essential-components-of-data-communication">2.2 Five Essential Components of Data Communication</h3>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Component</th>
+          <th>Technical Role</th>
+          <th>Practical Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>1</strong></td>
+          <td><strong>Sender (Source)</strong></td>
+          <td>Device that generates and initiates data transmission</td>
+          <td>Workstation, smartphone, IoT telemetry sensor</td>
+        </tr>
+        <tr>
+          <td><strong>2</strong></td>
+          <td><strong>Receiver (Sink)</strong></td>
+          <td>Device designated to accept and process incoming data</td>
+          <td>Web server, database host, network printer</td>
+        </tr>
+        <tr>
+          <td><strong>3</strong></td>
+          <td><strong>Message (Payload)</strong></td>
+          <td>Information payload being communicated</td>
+          <td>Binary file, JSON payload, video stream, VoIP packet</td>
+        </tr>
+        <tr>
+          <td><strong>4</strong></td>
+          <td><strong>Transmission Medium</strong></td>
+          <td>Physical or wireless channel transporting signals</td>
+          <td>Twisted-pair Cat6, Fiber-optic cable, 5GHz Wi-Fi radio waves</td>
+        </tr>
+        <tr>
+          <td><strong>5</strong></td>
+          <td><strong>Protocol</strong></td>
+          <td>Standardized set of rules governing formatting, timing &amp; error control</td>
+          <td>TCP/IP, HTTPS, IEEE 802.3 Ethernet, IEEE 802.11</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr>
+
+<section class="doc-section">
+  <h2 id="3-communication-modes-transmission-modes">3. Communication Modes (Transmission Modes)</h2>
+
+  <p>Communication mode defines the directional capability of signal transmission between two interconnected endpoints.</p>
+
+  <p><img src="subjects/computer-networks/images/transmission-modes.jpg" alt="Transmission Modes: Simplex, Half-Duplex, Full-Duplex"></p>
+
+  <h3 id="31-simplex-mode-unidirectional">3.1 Simplex Mode (Unidirectional)</h3>
+  <p>Data travels strictly in <strong>one direction</strong> (unidirectional). The sender can only transmit data; the receiver can only receive data with no hardware or logical capability to respond over the same channel.</p>
+
+  <pre><code>Sender [ A ] ──────────────────────────────────────────→ [ B ] Receiver</code></pre>
+  <div class="callout callout-info">
+    <p><strong>Examples:</strong> Keyboard to CPU bus, GPS satellite broadcasts, traditional FM radio/television broadcasting.</p>
+  </div>
+
+  <h3 id="32-half-duplex-mode-alternating-bidirectional">3.2 Half-Duplex Mode (Alternating Bidirectional)</h3>
+  <p>Data can travel in <strong>both directions, but not simultaneously</strong>. Each connected station can transmit and receive, but when one station is transmitting, the other must listen. The entire bandwidth of the physical channel is dedicated to the transmitting station during its time slice.</p>
+
+  <pre><code>Sender / Receiver [ A ] ────────── (Time 1: →) ──────────→ [ B ] Receiver / Sender
+Sender / Receiver [ A ] ←────────── (Time 2: ←) ────────── [ B ] Receiver / Sender</code></pre>
+  <div class="callout callout-info">
+    <p><strong>Examples:</strong> Walkie-talkies (Push-to-Talk), legacy shared-bus Ethernet using CSMA/CD, Wi-Fi radio channels.</p>
+  </div>
+
+  <h3 id="33-full-duplex-mode-simultaneous-bidirectional">3.3 Full-Duplex Mode (Simultaneous Bidirectional)</h3>
+  <p>Data travels in <strong>both directions simultaneously</strong>. Both endpoints can transmit and receive concurrently because the link contains two physically separate transmission paths or divides channel frequency using Frequency Division Duplexing (FDD).</p>
+
+  <pre><code>Node [ A ] ⇄══════════════════════════════════════════════⇄ [ B ] Node</code></pre>
+  <div class="callout callout-info">
+    <p><strong>Examples:</strong> Modern switched Full-Duplex Ethernet (100BASE-TX, 1000BASE-T), cellular phone calls, bidirectional TCP socket streams.</p>
+  </div>
+
+  <h3 id="34-transmission-modes-comparison-matrix">3.4 Transmission Modes Comparison Matrix</h3>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Mode</th>
+          <th>Directionality</th>
+          <th>Simultaneous Tx/Rx?</th>
+          <th>Channel Efficiency</th>
+          <th>Practical Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Simplex</strong></td>
+          <td>Unidirectional (A → B)</td>
+          <td>No</td>
+          <td>Low (one-way only)</td>
+          <td>Keyboard → Computer, GPS</td>
+        </tr>
+        <tr>
+          <td><strong>Half-Duplex</strong></td>
+          <td>Bidirectional (A ⇄ B)</td>
+          <td>No (Alternating)</td>
+          <td>Moderate (Turnaround overhead)</td>
+          <td>Walkie-Talkie, Half-duplex Wi-Fi</td>
+        </tr>
+        <tr>
+          <td><strong>Full-Duplex</strong></td>
+          <td>Bidirectional (A ⇄ B)</td>
+          <td>Yes (Simultaneous)</td>
+          <td>High (Full dedicated bandwidth)</td>
+          <td>Switched Ethernet, Phone Call</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr>
+
+<section class="doc-section">
+  <h2 id="4-connection-types-data-delivery-cast-modes">4. Connection Types &amp; Data Delivery Cast Modes</h2>
+
+  <h3 id="41-line-configuration-point-to-point-vs-multipoint">4.1 Line Configuration: Point-to-Point vs Multipoint</h3>
+  <p><img src="subjects/computer-networks/images/point-to-point.jpg" alt="Point-to-Point Connection"></p>
+  <ul>
+    <li><strong>Point-to-Point:</strong> A dedicated physical link between exactly two communicating devices. The entire capacity of the channel is reserved exclusively for transmission between those two nodes (e.g. dedicated leased line between two core routers, microwave link).</li>
+  </ul>
+
+  <p><img src="subjects/computer-networks/images/multipoint-topology.jpg" alt="Multipoint Connection Topology"></p>
+  <ul>
+    <li><strong>Multipoint (Multi-drop):</strong> A single shared transmission medium is shared among three or more devices simultaneously either spatially or through time sharing (e.g. Wi-Fi airspace, legacy coaxial bus).</li>
+  </ul>
+
+  <h3 id="42-data-delivery-cast-modes-unicast-multicast-broadcast">4.2 Data Delivery Cast Modes: Unicast, Multicast &amp; Broadcast</h3>
+  <p><img src="subjects/computer-networks/images/unicast-multicast-broadcast.jpg" alt="Unicast vs Multicast vs Broadcast"></p>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Mode</th>
+          <th>Addressing Scheme</th>
+          <th>Target Ratio</th>
+          <th>Practical Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Unicast</strong></td>
+          <td>Specific destination host IP / MAC</td>
+          <td><strong>1 → 1</strong> (One-to-One)</td>
+          <td>Loading a webpage via HTTPS (<code>192.168.1.10</code> → <code>93.184.216.34</code>)</td>
+        </tr>
+        <tr>
+          <td><strong>Multicast</strong></td>
+          <td>Class D multicast group IP (<code>224.0.0.0/4</code>)</td>
+          <td><strong>1 → Group</strong> (One-to-Many)</td>
+          <td>Live IPTV stream, Zoom video feed, OSPF router hellos (<code>224.0.0.5</code>)</td>
+        </tr>
+        <tr>
+          <td><strong>Broadcast</strong></td>
+          <td>Broadcast address (<code>255.255.255.255</code> or subnet broadcast)</td>
+          <td><strong>1 → All</strong> (One-to-All)</td>
+          <td>ARP Request ("Who has IP <code>192.168.1.1</code>?"), DHCP Discover</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr>
+
+<section class="doc-section">
+  <h2 id="5-network-performance-metrics-bandwidth-throughput-goodput">5. Network Performance Metrics: Bandwidth, Throughput &amp; Goodput</h2>
+
+  <p>Understanding how network speed and capacity are measured is critical for network engineering and university exams.</p>
+
+  <pre><code>┌─────────────────────────────────────────────────────────────┐
+│ 1. BANDWIDTH (Link Capacity: e.g. 1 Gbps)                  │
+│   ├── 2. THROUGHPUT (Actual bits delivered: e.g. 850 Mbps) │
+│   │     └── 3. GOODPUT (Pure payload data: e.g. 800 Mbps)  │
+└─────────────────────────────────────────────────────────────┘</code></pre>
+
+  <h3 id="51-bandwidth-theoretical-capacity">5.1 Bandwidth (Theoretical Capacity)</h3>
+  <ul>
+    <li><strong>Definition:</strong> The maximum theoretical data transfer rate of a communication channel, measured in bits per second (bps, Mbps, Gbps).</li>
+    <li><strong>Analogy:</strong> The width of a highway (e.g. an 8-lane highway represents higher bandwidth than a 2-lane road).</li>
+    <li><strong>Units:</strong> bps, Kbps (10<sup>3</sup>), Mbps (10<sup>6</sup>), Gbps (10<sup>9</sup>), Tbps (10<sup>12</sup>).</li>
+  </ul>
+
+  <h3 id="52-throughput-actual-transfer-rate">5.2 Throughput (Actual Transfer Rate)</h3>
+  <ul>
+    <li><strong>Definition:</strong> The actual volume of data successfully transmitted across a network link in a given time interval, taking into account congestion, protocol overhead, and retransmissions.</li>
+    <li><strong>Formula:</strong> <code>Throughput = Total Bits Received (including headers) / Time Taken (seconds)</code></li>
+    <li><strong>Constraint:</strong> Throughput is always strictly ≤ Bandwidth.</li>
+    <li><strong>Bottleneck Rule:</strong> In a multi-hop path, end-to-end throughput is bounded by the slowest link: <code>Throughput<sub>end-to-end</sub> = min(R<sub>1</sub>, R<sub>2</sub>, …, R<sub>n</sub>)</code></li>
+  </ul>
+
+  <h3 id="53-goodput-application-payload-rate">5.3 Goodput (Application Payload Rate)</h3>
+  <ul>
+    <li><strong>Definition:</strong> The rate at which useful application-level payload data (excluding all protocol headers, trailers, retransmitted corrupted packets, and handshakes) is delivered to the destination process.</li>
+    <li><strong>Formula:</strong> <code>Goodput = Useful Application Data Bits (excluding headers) / Time Taken (seconds)</code></li>
+    <li><strong>Hierarchy:</strong> <code>Goodput ≤ Throughput ≤ Bandwidth</code></li>
+  </ul>
+
+  <h3 id="54-performance-metrics-comparison-matrix">5.4 Performance Metrics Comparison Matrix</h3>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Measured Entity</th>
+          <th>Includes Protocol Headers?</th>
+          <th>Includes Retransmissions?</th>
+          <th>Typical Value on 1 Gbps Link</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Bandwidth</strong></td>
+          <td>Maximum theoretical link capacity</td>
+          <td>N/A (Hardware limit)</td>
+          <td>N/A</td>
+          <td>1000 Mbps (1 Gbps)</td>
+        </tr>
+        <tr>
+          <td><strong>Throughput</strong></td>
+          <td>Actual raw data delivered over link</td>
+          <td><strong>Yes</strong> (IP, TCP, MAC headers)</td>
+          <td><strong>Yes</strong> (Duplicate packets included)</td>
+          <td>≈ 850 – 940 Mbps</td>
+        </tr>
+        <tr>
+          <td><strong>Goodput</strong></td>
+          <td>Useful application payload delivered</td>
+          <td><strong>No</strong> (Payload only)</td>
+          <td><strong>No</strong> (Unique payload only)</td>
+          <td>≈ 800 – 890 Mbps</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr>
+
+<section class="doc-section">
+  <h2 id="6-latency-jitter-packet-loss-the-four-sources-of-delay">6. Latency, Jitter, Packet Loss &amp; The Four Sources of Delay</h2>
+
+  <h3 id="61-total-nodal-delay-formula">6.1 Total Nodal Delay Formula</h3>
+  <p>When a packet travels from a source to a destination through a series of intermediate routers, the total nodal delay (d<sub>nodal</sub>) at each router consists of <strong>four additive components</strong>:</p>
+
+  <div class="math-card">
+    <div class="math-title">Total Nodal Delay Formula</div>
+    <div class="math-formula">d<sub>nodal</sub> = d<sub>proc</sub> + d<sub>queue</sub> + d<sub>trans</sub> + d<sub>prop</sub></div>
+  </div>
+
+  <pre><code>Incoming Packet
+       │
+       ▼
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│  Processing  │ ──→ │   Queuing    │ ──→ │ Transmission │ ──→ [ Physical Link ] ──→ Propagation Delay ──→ Next Router
+│ Delay (dproc)│     │ Delay (dqueue│     │ Delay (dtrans│                              (dprop)
+└──────────────┘     └──────────────┘     └──────────────┘</code></pre>
+
+  <h3 id="62-the-four-sources-of-delay-in-depth">6.2 The Four Sources of Delay In-Depth</h3>
+  <h4>1. Nodal Processing Delay (d<sub>proc</sub>)</h4>
+  <ul>
+    <li><strong>What it is:</strong> The time required for the router CPU or ASIC to examine the packet header, determine where to direct the packet, verify checksums for bit errors, and update TTL.</li>
+    <li><strong>Typical Duration:</strong> Microseconds (µs) or nanoseconds on modern hardware.</li>
+  </ul>
+
+  <h4>2. Queuing Delay (d<sub>queue</sub>)</h4>
+  <ul>
+    <li><strong>What it is:</strong> The time a packet spends waiting in the router's transmission buffer queue until the outbound link becomes available.</li>
+    <li><strong>Variable Nature:</strong> Dynamic! Depends entirely on network congestion.</li>
+    <li><strong>Traffic Intensity Formula (I):</strong>
+      <div class="math-card">
+        <div class="math-title">Traffic Intensity (I)</div>
+        <div class="math-formula">I = (L · a) / R</div>
+      </div>
+      <p>Where <code>L</code> = Packet length in bits, <code>a</code> = Average packet arrival rate (pkts/sec), <code>R</code> = Link bandwidth (bps).</p>
+      <ul>
+        <li>If <code>I ≈ 0</code>: Queuing delay is negligible.</li>
+        <li>If <code>I → 1</code>: Queuing delay grows exponentially (queues fill up).</li>
+        <li>If <code>I &gt; 1</code>: Arriving traffic exceeds link capacity; buffer overflows causing <strong>Packet Loss</strong>.</li>
+      </ul>
+    </li>
+  </ul>
+
+  <h4>3. Transmission Delay (d<sub>trans</sub> / Store-and-Forward Delay)</h4>
+  <ul>
+    <li><strong>What it is:</strong> The time required to push (serialize) all bits of a packet onto the physical transmission medium.</li>
+    <li><strong>Formula:</strong>
+      <div class="math-card">
+        <div class="math-title">Transmission Delay Formula</div>
+        <div class="math-formula">d<sub>trans</sub> = L / R</div>
+      </div>
+      <p>Where <code>L</code> = Packet size in bits, <code>R</code> = Link bandwidth in bps.</p>
+    </li>
+    <li><strong>Governed by:</strong> Packet size and link bandwidth (independent of physical distance!).</li>
+  </ul>
+
+  <h4>4. Propagation Delay (d<sub>prop</sub>)</h4>
+  <ul>
+    <li><strong>What it is:</strong> The time required for a single bit to physically travel through the transmission medium from sender to receiver.</li>
+    <li><strong>Formula:</strong>
+      <div class="math-card">
+        <div class="math-title">Propagation Delay Formula</div>
+        <div class="math-formula">d<sub>prop</sub> = d / s</div>
+      </div>
+      <p>Where <code>d</code> = Distance in meters, <code>s</code> = Propagation speed (≈ 2 × 10<sup>8</sup> m/s in copper/fiber).</p>
+    </li>
+    <li><strong>Governed by:</strong> Distance and physical medium speed (independent of packet size or bandwidth!).</li>
+  </ul>
+
+  <h3 id="63-transmission-delay-vs-propagation-delay">6.3 Transmission Delay vs Propagation Delay (High-Yield Exam Comparison)</h3>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Parameter</th>
+          <th>Transmission Delay (d<sub>trans</sub>)</th>
+          <th>Propagation Delay (d<sub>prop</sub>)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Core Definition</strong></td>
+          <td>Time to push all packet bits onto the link</td>
+          <td>Time for a bit to physically travel across the link</td>
+        </tr>
+        <tr>
+          <td><strong>Mathematical Formula</strong></td>
+          <td><strong>d<sub>trans</sub> = L / R</strong></td>
+          <td><strong>d<sub>prop</sub> = d / s</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Governing Factors</strong></td>
+          <td>Packet length (L) and Link bandwidth (R)</td>
+          <td>Physical distance (d) and Propagation speed (s)</td>
+        </tr>
+        <tr>
+          <td><strong>Highway Toll Analogy</strong></td>
+          <td>Time for toll booth to service and release a convoy of cars</td>
+          <td>Time for cars to drive the distance between two toll booths</td>
+        </tr>
+        <tr>
+          <td><strong>Impact of Doubling Bandwidth (R)</strong></td>
+          <td><strong>Halved (50% reduction)</strong></td>
+          <td><strong>Zero effect (Unchanged)</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Impact of Doubling Distance (d)</strong></td>
+          <td><strong>Zero effect (Unchanged)</strong></td>
+          <td><strong>Doubled (100% increase)</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="64-bandwidth-delay-product-bdp">6.4 Bandwidth-Delay Product (BDP)</h3>
+  <p>The <strong>Bandwidth-Delay Product (BDP)</strong> measures the maximum volume of unacknowledged data that can be in flight in the network channel at any single moment:</p>
+  <div class="math-card">
+    <div class="math-title">Bandwidth-Delay Product (BDP)</div>
+    <div class="math-formula">BDP = R × RTT &nbsp;&nbsp;or&nbsp;&nbsp; BDP = R × d<sub>prop</sub></div>
+  </div>
+  <ul>
+    <li><strong>Significance:</strong> Represents the ideal TCP receive window buffer size required to fully saturate a high-speed link without stalling.</li>
+    <li><strong>Example:</strong> On a 1 Gbps link with 50 ms RTT: <code>BDP = 10<sup>9</sup> bps × 0.05 s = 50,000,000 bits ≈ 6.25 MB</code>.</li>
+  </ul>
+
+  <h3 id="65-latency-jitter-bufferbloat">6.5 Latency, Jitter &amp; Bufferbloat</h3>
+  <ul>
+    <li><strong>Latency (Round-Trip Time / RTT):</strong> The total time required for a packet to travel from sender to receiver and for acknowledgment to return (2 × d<sub>one-way</sub>).</li>
+    <li><strong>Jitter (Packet Delay Variation / PDV):</strong> The statistical variation in latency between consecutive packets in a stream: <code>Jitter = | Latency<sub>n</sub> - Latency<sub>n-1</sub> |</code>.</li>
+    <li><strong>Impact of Jitter:</strong> High jitter causes stutter, robotic distortion, and buffer underruns in real-time applications (VoIP, video calls, cloud gaming).</li>
+    <li><strong>Bufferbloat:</strong> Excessive buffering inside consumer routers that introduces seconds of artificial queuing delay during high-bandwidth uploads.</li>
+  </ul>
+
+  <h3 id="66-packet-loss-bit-error-rate-ber">6.6 Packet Loss &amp; Bit Error Rate (BER)</h3>
+  <ul>
+    <li><strong>Packet Loss:</strong> Occurs when one or more packets fail to reach their destination, primarily caused by <strong>router queue overflows during congestion</strong> or physical transmission noise.</li>
+    <li><strong>Bit Error Rate (BER):</strong> The ratio of erroneous received bits to the total number of transmitted bits: <code>BER = (Bit Errors) / (Total Bits Transmitted)</code>.</li>
+  </ul>
+</section>
+
+<hr>
+
+<section class="doc-section">
+  <h2 id="7-network-diagnostics-troubleshooting-cli-utilities">7. Network Diagnostics &amp; Troubleshooting CLI Utilities</h2>
+
+  <pre><code>┌─────────────────────────────────────────────────────────────┐
+│ 1. PING         ─── ICMP Echo (Checks reachability &amp; RTT)   │
+│ 2. TRACEROUTE   ─── ICMP TTL Expiry (Maps router path hops) │
+│ 3. NETSTAT / SS ─── Active TCP/UDP sockets and ports        │
+│ 4. NSLOOKUP/DIG ─── DNS record resolution queries           │
+└─────────────────────────────────────────────────────────────┘</code></pre>
+
+  <h3 id="71-ping-packet-internet-groper">7.1 Ping (Packet Internet Groper)</h3>
+  <ul>
+    <li><strong>Protocol Used:</strong> <strong>ICMP (Internet Control Message Protocol)</strong> at Layer 3 (IP Protocol <code>1</code>).</li>
+    <li><strong>Mechanism:</strong> Sends <strong>ICMP Echo Request</strong> (Type 8, Code 0) packets to target host. The target responds with <strong>ICMP Echo Reply</strong> (Type 0, Code 0).</li>
+    <li><strong>Key Metrics Provided:</strong> Round-trip latency (min/avg/max/mdev), packet loss percentage, and returned Time-to-Live (TTL).</li>
+  </ul>
+  <pre><code class="language-bash"># Send 4 ICMP echo probes
+ping -c 4 8.8.8.8</code></pre>
+
+  <h3 id="72-traceroute-tracert-path-discovery">7.2 Traceroute / Tracert (Path Discovery &amp; Hop Identification)</h3>
+  <ul>
+    <li><strong>Purpose:</strong> Discovers and displays the exact sequence of Layer 3 routers (hops) traversed by packets to reach a destination.</li>
+    <li><strong>Mechanism (TTL Expiry Probe):</strong>
+      <ol>
+        <li>Sends probe packet with <code>TTL = 1</code>. First router decrements <code>TTL = 0</code>, drops packet, and returns <strong>ICMP Time Exceeded</strong> (Type 11, Code 0), revealing Router 1's IP.</li>
+        <li>Sends probe with <code>TTL = 2</code> → Router 2 drops packet and returns ICMP Time Exceeded.</li>
+        <li>Increments TTL sequentially (<code>TTL = 3, 4, 5, …</code>) until destination host is reached.</li>
+      </ol>
+    </li>
+  </ul>
+
+  <h3 id="73-core-diagnostic-cli-utilities-reference">7.3 Core Diagnostic CLI Utilities Reference</h3>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Tool</th>
+          <th>Underlying Protocol</th>
+          <th>Primary Diagnostic Purpose</th>
+          <th>Quick Example Command</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong><code>ping</code></strong></td>
+          <td>ICMP (Type 8/0)</td>
+          <td>Verify host reachability and measure round-trip latency</td>
+          <td><code>ping -c 4 1.1.1.1</code></td>
+        </tr>
+        <tr>
+          <td><strong><code>traceroute</code></strong> / <strong><code>tracert</code></strong></td>
+          <td>ICMP / UDP (TTL manipulation)</td>
+          <td>Map router hops and identify intermediate routing bottlenecks</td>
+          <td><code>traceroute google.com</code></td>
+        </tr>
+        <tr>
+          <td><strong><code>netstat</code></strong> / <strong><code>ss</code></strong></td>
+          <td>Kernel Socket API</td>
+          <td>Inspect open TCP/UDP ports, listening sockets, and connections</td>
+          <td><code>ss -tulpn</code> or <code>netstat -ano</code></td>
+        </tr>
+        <tr>
+          <td><strong><code>nslookup</code></strong> / <strong><code>dig</code></strong></td>
+          <td>DNS (UDP port 53)</td>
+          <td>Query DNS name servers for A, AAAA, MX, and CNAME records</td>
+          <td><code>dig google.com +short</code></td>
+        </tr>
+        <tr>
+          <td><strong><code>ip</code></strong> / <strong><code>ifconfig</code></strong></td>
+          <td>Netlink / ioctl</td>
+          <td>Inspect and configure network interfaces, IP addresses, MTU</td>
+          <td><code>ip addr show</code></td>
+        </tr>
+        <tr>
+          <td><strong><code>arp</code></strong></td>
+          <td>ARP (Layer 2/3)</td>
+          <td>View and manage the local IP-to-MAC address resolution cache</td>
+          <td><code>arp -a</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr>
+
+<section class="doc-section">
+  <h2 id="8-types-of-networks-by-geographical-scale">8. Types of Networks by Geographical Scale</h2>
+
+  <p><img src="subjects/computer-networks/images/pan-lan-man-wan.jpg" alt="PAN, LAN, MAN, WAN Geographical Coverage"></p>
+
+  <h3 id="81-pan-personal-area-network">8.1 PAN — Personal Area Network</h3>
+  <ul>
+    <li><strong>Coverage Range:</strong> ≈ 1 to 10 meters (centered around an individual).</li>
+    <li><strong>Technologies:</strong> Bluetooth (IEEE 802.15.1), Zigbee, USB, NFC.</li>
+    <li><strong>Use Cases:</strong> Connecting smartphone to smartwatch, wireless earbuds, or vehicle hands-free.</li>
+  </ul>
+
+  <h3 id="82-lan-local-area-network">8.2 LAN — Local Area Network</h3>
+  <p><img src="subjects/computer-networks/images/lan-diagram.jpg" alt="Local Area Network (LAN)"></p>
+  <ul>
+    <li><strong>Coverage Range:</strong> Within a room, office floor, single building, or small academic campus (&lt; 1 km).</li>
+    <li><strong>Ownership:</strong> Privately owned and managed by a single individual or organization.</li>
+    <li><strong>Speed &amp; Delay:</strong> Very high data rates (1 Gbps – 100 Gbps), ultra-low latency (&lt; 1 ms), minimal error rates.</li>
+    <li><strong>Technologies:</strong> Ethernet (IEEE 802.3), Wi-Fi (IEEE 802.11).</li>
+  </ul>
+
+  <h3 id="83-man-metropolitan-area-network">8.3 MAN — Metropolitan Area Network</h3>
+  <p><img src="subjects/computer-networks/images/man-diagram.jpg" alt="Metropolitan Area Network (MAN)"></p>
+  <ul>
+    <li><strong>Coverage Range:</strong> Spans an entire city or large municipal region (5 km – 50 km).</li>
+    <li><strong>Ownership:</strong> Municipalities, telecom consortia, or ISP regional backbones.</li>
+    <li><strong>Technologies:</strong> Metro Ethernet, Dark Fiber Rings, Cellular 5G base stations, Cable TV networks.</li>
+  </ul>
+
+  <h3 id="84-wan-wide-area-network">8.4 WAN — Wide Area Network</h3>
+  <p><img src="subjects/computer-networks/images/wan-diagram.jpg" alt="Wide Area Network (WAN)"></p>
+  <ul>
+    <li><strong>Coverage Range:</strong> Spans multiple cities, countries, continents, or the entire globe (&gt; 100 km).</li>
+    <li><strong>Ownership:</strong> Multiple public/private Tier-1 Internet Service Providers (ISPs) interconnected via Internet Exchange Points (IXPs) and undersea fiber-optic cables.</li>
+    <li><strong>Prime Example:</strong> The global <strong>Internet</strong>.</li>
+  </ul>
+
+  <h3 id="85-geographical-scale-comparison-matrix">8.5 Geographical Scale Comparison Matrix</h3>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Parameter</th>
+          <th>PAN</th>
+          <th>LAN</th>
+          <th>MAN</th>
+          <th>WAN</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Geographic Span</strong></td>
+          <td>Up to 10 m</td>
+          <td>Up to 1 km</td>
+          <td>5 – 50 km</td>
+          <td>Worldwide (&gt; 100 km)</td>
+        </tr>
+        <tr>
+          <td><strong>Data Transfer Rate</strong></td>
+          <td>≈ 1 – 24 Mbps</td>
+          <td>100 Mbps – 10 Gbps+</td>
+          <td>100 Mbps – 1 Gbps</td>
+          <td>Variable (10 Mbps – 400 Gbps)</td>
+        </tr>
+        <tr>
+          <td><strong>Propagation Delay</strong></td>
+          <td>Negligible (µs)</td>
+          <td>Very Low (&lt; 2 ms)</td>
+          <td>Moderate (5 – 15 ms)</td>
+          <td>High (30 – 300 ms)</td>
+        </tr>
+        <tr>
+          <td><strong>Cost &amp; Complexity</strong></td>
+          <td>Minimal</td>
+          <td>Low / Moderate</td>
+          <td>High</td>
+          <td>Very High</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr>
+
+<section class="doc-section">
+  <h2 id="9-internet-intranet-extranet">9. Internet, Intranet &amp; Extranet</h2>
+
+  <p><img src="subjects/computer-networks/images/internet-diagram.jpg" alt="The Global Internet"></p>
+
+  <h3 id="91-the-global-internet">9.1 The Global Internet</h3>
+  <p>The <strong>Internet</strong> is the globally interconnected system of autonomous public and private computer networks utilizing the standardized <strong>TCP/IP protocol suite</strong>.</p>
+
+  <h3 id="92-intranet-vs-extranet-architectures">9.2 Intranet vs Extranet Architectures</h3>
+  <p><img src="subjects/computer-networks/images/internet-vs-intranet.jpg" alt="Internet vs Intranet"></p>
+  <p><img src="subjects/computer-networks/images/intranet-vs-extranet.jpg" alt="Intranet vs Extranet"></p>
+  <ul>
+    <li><strong>Intranet:</strong> A strictly <strong>private, firewalled corporate network</strong> accessible exclusively by internal employees to share confidential documents, HR portals, and internal tooling.</li>
+  </ul>
+  <p><img src="subjects/computer-networks/images/extranet-diagram.jpg" alt="Extranet Network Architecture"></p>
+  <ul>
+    <li><strong>Extranet:</strong> A secure, controlled extension of an organization's Intranet enabling <strong>authorized external third parties</strong> (vendors, suppliers, certified partners, enterprise clients) to access specific resources via secure VPNs or authenticated portals.</li>
+  </ul>
+</section>
+
+<hr>
+
+<section class="doc-section">
+  <h2 id="10-network-architectures-client-server-vs-peer-to-peer">10. Network Architectures: Client-Server vs Peer-to-Peer</h2>
+
+  <p><img src="subjects/computer-networks/images/client-server-vs-p2p.jpg" alt="Client-Server vs Peer-to-Peer Architecture"></p>
+
+  <h3 id="101-client-server-architecture">10.1 Client-Server Architecture</h3>
+  <ul>
+    <li><strong>Server:</strong> High-performance host providing specialized services (HTTP, DNS, Database, Mail).</li>
+    <li><strong>Client:</strong> End-user device initiating request-response transactions with the server.</li>
+    <li><strong>Strengths:</strong> Centralized data integrity, simple role-based access control, streamlined backup routines, high horizontal scalability.</li>
+    <li><strong>Weakness:</strong> Server hardware represents a single point of failure if not load-balanced.</li>
+  </ul>
+
+  <h3 id="102-peer-to-peer-p2p-architecture">10.2 Peer-to-Peer (P2P) Architecture</h3>
+  <ul>
+    <li><strong>Peers (Servents):</strong> All nodes possess equal privileges and can simultaneously act as both clients and servers.</li>
+    <li><strong>Strengths:</strong> Extreme fault tolerance, no expensive central infrastructure, bandwidth scales organically with node count.</li>
+    <li><strong>Examples:</strong> BitTorrent file distribution, Bitcoin blockchain, WebRTC peer data channels.</li>
+  </ul>
+</section>
+
+<hr>
+
+<section class="doc-section">
+  <h2 id="11-network-hardware-devices">11. Network Hardware &amp; Devices</h2>
+
+  <p><img src="subjects/computer-networks/images/network-devices-osi.jpg" alt="Network Devices across OSI Layers"></p>
+
+  <h3 id="111-network-hardware-device-directory">11.1 Network Hardware Device Directory</h3>
+  <ol>
+    <li><strong>Network Interface Card (NIC):</strong> Physical PCIe card or embedded chip providing hardware layer connection and burnt-in 48-bit <strong>MAC Address</strong> (Layer 1/2).</li>
+    <li><strong>Repeater:</strong> Physical layer hardware that amplifies or reshapes weakened signals to extend maximum cable distance (Layer 1).</li>
+    <li><strong>Hub:</strong> Legacy multi-port physical layer repeater that blindly broadcasts incoming signals to all ports (Layer 1).</li>
+    <li><strong>Bridge:</strong> Layer 2 device that inspects MAC addresses to partition a large network into two distinct collision domains (Layer 2).</li>
+    <li><strong>Switch:</strong> Intelligent multi-port Layer 2 bridge. Maintains a dynamic <strong>MAC Address Table (CAM Table)</strong> to switch Ethernet frames directly between ports with full collision isolation (Layer 2).</li>
+    <li><strong>Router:</strong> Layer 3 internetworking gateway. Reads IP packet headers, maintains routing tables (OSPF, BGP), and determines optimal paths across independent IP subnets (Layer 3).</li>
+    <li><strong>Gateway:</strong> Enterprise boundary device performing protocol translation between fundamentally incompatible network architectures (Layer 4–7).</li>
+  </ol>
+
+  <h3 id="112-hub-vs-switch-vs-router-comparison-matrix">11.2 Hub vs Switch vs Router Comparison Matrix</h3>
+  <p><img src="subjects/computer-networks/images/hub-switch-router.jpg" alt="Hub vs Switch vs Router Comparison"></p>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Hub</th>
+          <th>Switch</th>
+          <th>Router</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>OSI Operating Layer</strong></td>
+          <td><strong>Layer 1</strong> (Physical)</td>
+          <td><strong>Layer 2</strong> (Data Link) / L3 Switch</td>
+          <td><strong>Layer 3</strong> (Network)</td>
+        </tr>
+        <tr>
+          <td><strong>Addressing Used</strong></td>
+          <td>None (Raw bits)</td>
+          <td><strong>MAC Address</strong> (48-bit hardware)</td>
+          <td><strong>IP Address</strong> (32-bit / 128-bit logical)</td>
+        </tr>
+        <tr>
+          <td><strong>Data Forwarding Unit</strong></td>
+          <td>Bits</td>
+          <td><strong>Frames</strong></td>
+          <td><strong>Packets</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Forwarding Decision</strong></td>
+          <td>Blind broadcast to all ports</td>
+          <td>Hardware CAM Table unicast</td>
+          <td>Software/ASIC Routing Table lookup</td>
+        </tr>
+        <tr>
+          <td><strong>Collision Domains</strong></td>
+          <td>Single shared collision domain</td>
+          <td>Separate collision domain per port</td>
+          <td>Separate collision domain per port</td>
+        </tr>
+        <tr>
+          <td><strong>Broadcast Domains</strong></td>
+          <td>Single broadcast domain</td>
+          <td>Single broadcast domain (without VLAN)</td>
+          <td>Separates broadcast domains per subnet</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr>
+
+<section class="doc-section">
+  <h2 id="12-network-software-architecture-encapsulation">12. Network Software Architecture &amp; Encapsulation</h2>
+
+  <h3 id="121-layered-architecture-philosophy">12.1 Layered Architecture Philosophy</h3>
+  <p>Network software is structured in a vertical hierarchy of abstraction layers. Each layer provides a well-defined set of services to the layer directly above it while abstracting internal implementation details.</p>
+  <div class="callout callout-info">
+    <p><strong>1. Service:</strong> What functionality a layer delivers to the upper adjacent layer.</p>
+    <p><strong>2. Interface:</strong> The software API or boundary mechanism used by an upper layer to request a service from a lower layer.</p>
+    <p><strong>3. Protocol:</strong> The standardized syntax, semantics, and synchronization rules followed by peer entities communicating across the network at the same layer.</p>
+  </div>
+
+  <h3 id="122-data-encapsulation-decapsulation-pdu-stack">12.2 Data Encapsulation &amp; Decapsulation (PDU Stack)</h3>
+  <p><img src="subjects/computer-networks/images/data-encapsulation.png" alt="Data Encapsulation and Decapsulation in OSI Model"></p>
+  <ul>
+    <li><strong>Encapsulation (Transmitting Host):</strong> As data moves downwards from Application layer to Physical layer, each layer prepends a specialized <strong>Header</strong> (and Data Link appends a <strong>Trailer</strong> with CRC checksum) containing addressing and control metadata.</li>
+    <li><strong>Decapsulation (Receiving Host):</strong> When raw bits arrive at receiver, data moves upwards. Each corresponding layer inspects, validates, strips its header, and passes payload upward.</li>
+  </ul>
+
+  <pre><code>Application Layer  → [ DATA ]
+Transport Layer    → [ TH | DATA ]                          → (Segment / Datagram)
+Network Layer      → [ NH | TH | DATA ]                     → (Packet)
+Data Link Layer    → [ DLH | NH | TH | DATA | DLT (CRC) ]   → (Frame)
+Physical Layer     → 01010011 01100101 01101110 01100100   → (Raw Bits)</code></pre>
+</section>
+
+<hr>
+
+<section class="doc-section">
+  <h2 id="13-network-topologies">13. Network Topologies</h2>
+
+  <p><img src="subjects/computer-networks/images/network-topologies.jpg" alt="Network Topologies Overview"></p>
+
+  <h3 id="131-topologies-comparative-breakdown-fault-impact">13.1 Topologies Comparative Breakdown &amp; Fault Impact</h3>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Topology</th>
+          <th>Geometric Structure</th>
+          <th>Key Advantages</th>
+          <th>Key Disadvantages</th>
+          <th>Cable Fault Impact</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Bus</strong></td>
+          <td>Single central backbone cable with terminators</td>
+          <td>Simple installation, minimum cable for small setups</td>
+          <td>Backbone failure breaks entire network</td>
+          <td><strong>Catastrophic</strong> (Network down)</td>
+        </tr>
+        <tr>
+          <td><strong>Star</strong></td>
+          <td>All end-stations connect to a central Switch/Hub</td>
+          <td>Easy expansion; single node failure does not affect others</td>
+          <td>Central switch failure crashes all attached hosts</td>
+          <td><strong>Isolated</strong> to failed node</td>
+        </tr>
+        <tr>
+          <td><strong>Ring</strong></td>
+          <td>Nodes connected in a closed loop</td>
+          <td>Equal access opportunity; predictable latency</td>
+          <td>Single link break disrupts entire ring</td>
+          <td><strong>Critical</strong> (Ring collapse)</td>
+        </tr>
+        <tr>
+          <td><strong>Mesh (Full)</strong></td>
+          <td>Every node connects directly to every other node: Links = n(n-1)/2</td>
+          <td>Maximum redundancy, zero traffic bottleneck</td>
+          <td>Highly expensive, complex cabling</td>
+          <td><strong>Zero impact</strong> (Alternate paths)</td>
+        </tr>
+        <tr>
+          <td><strong>Tree</strong></td>
+          <td>Hierarchical parent-child branching rooted at core switch</td>
+          <td>Scalable hierarchical management</td>
+          <td>Core root switch failure disconnects sub-branches</td>
+          <td><strong>Partial</strong> to sub-branch</td>
+        </tr>
+        <tr>
+          <td><strong>Hybrid</strong></td>
+          <td>Combination of two or more topologies (e.g. Star-Bus)</td>
+          <td>Highly flexible, customizable for enterprise campuses</td>
+          <td>High design complexity and cost</td>
+          <td><strong>Depends</strong> on segment</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr>
+
+<section class="doc-section">
+  <h2 id="14-network-protocol-elements">14. Network Protocol Elements</h2>
+
+  <h3 id="141-the-three-pillars-of-network-protocols">14.1 The Three Pillars of Network Protocols</h3>
+  <pre><code>┌─────────────────────────────────────────────────────────────┐
+│                     PROTOCOL ELEMENTS                       │
+├───────────────────┬───────────────────┬─────────────────────┤
+│      SYNTAX       │     SEMANTICS     │       TIMING        │
+├───────────────────┼───────────────────┼─────────────────────┤
+│ Data Format,      │ Meaning of bits,  │ Transmission speed, │
+│ Field layout,     │ Actions triggered │ Sequencing,         │
+│ Header sizes      │ by control flags  │ Timeout &amp; flow ctrl │
+└───────────────────┴───────────────────┴─────────────────────┘</code></pre>
+  <ol>
+    <li><strong>Syntax:</strong> Dictates data format, field sizes, bit positions, and endianness (e.g., first 4 bits of IPv4 header define IP Version).</li>
+    <li><strong>Semantics:</strong> Dictates interpretation of control fields and what corrective action is required (e.g., <code>SYN</code> flag initiates 3-way handshake; <code>RST</code> tears down socket).</li>
+    <li><strong>Timing:</strong> Governs transmission clocking, transmission rate adaptation, and retransmission timeout intervals (e.g., TCP Sliding Window Flow Control).</li>
+  </ol>
+</section>
+
+<hr>
+
+<section class="doc-section">
+  <h2 id="15-osi-7-layer-reference-model">15. OSI 7-Layer Reference Model</h2>
+
+  <p><img src="subjects/computer-networks/images/osi-7-layer-model.jpg" alt="OSI 7-Layer Reference Model with Protocols &amp; PDUs"></p>
+
+  <h3 id="151-detailed-osi-layer-breakdown-mnemonics">15.1 Detailed OSI Layer Breakdown &amp; Mnemonics</h3>
+  <pre><code>Layer 7: APPLICATION   ─── Network APIs, Human-Computer Interface (HTTP, DNS, SSH)
+Layer 6: PRESENTATION  ─── Data Representation, Encryption, Compression (TLS, JSON, JPEG)
+Layer 5: SESSION       ─── Dialog Management, Checkpointing, Session Tokens (RPC, NetBIOS)
+Layer 4: TRANSPORT     ─── End-to-End Reliability, Port Multiplexing (TCP, UDP)
+Layer 3: NETWORK       ─── Logical IP Addressing, Routing &amp; Forwarding (IPv4, IPv6, ICMP)
+Layer 2: DATA LINK     ─── Physical MAC Addressing, Framing &amp; Error Check (Ethernet, Wi-Fi)
+Layer 1: PHYSICAL      ─── Bit Transmission, Signaling &amp; Physical Media (Voltages, Fiber, RF)</code></pre>
+
+  <div class="callout callout-info">
+    <p><strong>Mnemonic (Top-Down):</strong> <strong>A</strong>ll <strong>P</strong>eople <strong>S</strong>eem <strong>T</strong>o <strong>N</strong>eed <strong>D</strong>ata <strong>P</strong>rocessing</p>
+    <p><strong>Mnemonic (Bottom-Up):</strong> <strong>P</strong>lease <strong>D</strong>o <strong>N</strong>ot <strong>T</strong>hrow <strong>S</strong>ausage <strong>P</strong>izza <strong>A</strong>way</p>
+  </div>
+
+  <h3 id="152-complete-osi-7-layer-specification-matrix">15.2 Complete OSI 7-Layer Specification Matrix</h3>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Layer #</th>
+          <th>Layer Name</th>
+          <th>Protocol Data Unit (PDU)</th>
+          <th>Primary Addressing</th>
+          <th>Core Responsibilities</th>
+          <th>Typical Protocols / Standards</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>7</strong></td>
+          <td><strong>Application</strong></td>
+          <td>Data / Message</td>
+          <td>User / Process ID</td>
+          <td>User interface, application network services</td>
+          <td>HTTP, HTTPS, DNS, SMTP, FTP, SSH</td>
+        </tr>
+        <tr>
+          <td><strong>6</strong></td>
+          <td><strong>Presentation</strong></td>
+          <td>Data</td>
+          <td>—</td>
+          <td>Syntax formatting, TLS encryption, gzip compression</td>
+          <td>SSL/TLS, ASCII, UTF-8, JPEG, MPEG</td>
+        </tr>
+        <tr>
+          <td><strong>5</strong></td>
+          <td><strong>Session</strong></td>
+          <td>Data</td>
+          <td>Session ID</td>
+          <td>Session establishment, maintenance, checkpoints</td>
+          <td>NetBIOS, RPC, Sockets, PPTP</td>
+        </tr>
+        <tr>
+          <td><strong>4</strong></td>
+          <td><strong>Transport</strong></td>
+          <td><strong>Segment</strong> (TCP) / <strong>Datagram</strong> (UDP)</td>
+          <td><strong>Port Number</strong> (16-bit)</td>
+          <td>End-to-end delivery, flow control, error recovery</td>
+          <td>TCP, UDP, QUIC, SCTP</td>
+        </tr>
+        <tr>
+          <td><strong>3</strong></td>
+          <td><strong>Network</strong></td>
+          <td><strong>Packet</strong></td>
+          <td><strong>IP Address</strong> (32-bit / 128-bit)</td>
+          <td>Logical addressing, inter-network packet routing</td>
+          <td>IPv4, IPv6, ICMP, OSPF, BGP</td>
+        </tr>
+        <tr>
+          <td><strong>2</strong></td>
+          <td><strong>Data Link</strong></td>
+          <td><strong>Frame</strong></td>
+          <td><strong>MAC Address</strong> (48-bit)</td>
+          <td>Node-to-node framing, MAC addressing, CRC check</td>
+          <td>Ethernet (802.3), Wi-Fi (802.11), PPP</td>
+        </tr>
+        <tr>
+          <td><strong>1</strong></td>
+          <td><strong>Physical</strong></td>
+          <td><strong>Bits</strong></td>
+          <td>Physical Pin / Frequency</td>
+          <td>Electrical signal encoding, clock synchronization</td>
+          <td>RS-232, 1000BASE-T, Fiber, Radio (RF)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr>
+
+<section class="doc-section">
+  <h2 id="16-tcp-ip-protocol-suite">16. TCP/IP Protocol Suite</h2>
+
+  <p><img src="subjects/computer-networks/images/tcpip-4-layer-model.jpg" alt="TCP/IP 4-Layer Protocol Suite"></p>
+
+  <h3 id="161-the-4-architectural-tcp-ip-layers">16.1 The 4 Architectural TCP/IP Layers</h3>
+  <ol>
+    <li><strong>Application Layer (L4):</strong> Combines OSI Layers 5, 6, and 7. Directly supports end-user network applications (HTTP, DNS, SMTP, SSH).</li>
+    <li><strong>Transport Layer (L3):</strong> Provides host-to-host process communication over TCP (reliable, connection-oriented) or UDP (fast, connectionless).</li>
+    <li><strong>Internet Layer (L2):</strong> Handles IP logical addressing, packet routing, and fragmentation across network boundaries using the <strong>Internet Protocol (IP)</strong>.</li>
+    <li><strong>Network Access / Link Layer (L1):</strong> Combines OSI Layers 1 and 2. Encompasses physical drivers, network adapters, and protocols governing transmission across local network media (Ethernet, Wi-Fi).</li>
+  </ol>
+
+  <h3 id="162-osi-model-vs-tcp-ip-protocol-suite-mapping">16.2 OSI Model vs TCP/IP Protocol Suite Mapping</h3>
+  <p><img src="subjects/computer-networks/images/osi-vs-tcpip.jpg" alt="OSI Model vs TCP/IP Model Comparison"></p>
+
+  <h3 id="163-comprehensive-comparison-matrix">16.3 Comprehensive Comparison Matrix</h3>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Aspect</th>
+          <th>OSI Reference Model</th>
+          <th>TCP/IP Model</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Primary Nature</strong></td>
+          <td>Theoretical reference model developed by ISO</td>
+          <td>Practical implementation standard of the Internet</td>
+        </tr>
+        <tr>
+          <td><strong>Total Layers</strong></td>
+          <td><strong>7 Layers</strong></td>
+          <td><strong>4 Layers</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Application Layer</strong></td>
+          <td>Partitioned into Application, Presentation, Session</td>
+          <td>Unified into a single Application layer</td>
+        </tr>
+        <tr>
+          <td><strong>Network &amp; Lower Layers</strong></td>
+          <td>Separate Network, Data Link, and Physical layers</td>
+          <td>Combined as Internet and Network Access layers</td>
+        </tr>
+        <tr>
+          <td><strong>Protocol Independence</strong></td>
+          <td>Strict boundary separation; model designed before protocols</td>
+          <td>Protocols created first; model designed around them</td>
+        </tr>
+        <tr>
+          <td><strong>Transport Reliability</strong></td>
+          <td>Supports both connection-oriented &amp; connectionless</td>
+          <td>Supports connection-oriented (TCP) &amp; connectionless (UDP)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr>
+
+<section class="doc-section">
+  <h2 id="17-exam-quick-reference-high-yield-summary">17. Exam Quick-Reference &amp; High-Yield Summary</h2>
+
+  <h3 id="171-mathematical-formulas-cheat-sheet">17.1 Mathematical Formulas Cheat Sheet</h3>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Formula Name</th>
+          <th>Equation</th>
+          <th>Variables Meaning</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Transmission Delay</strong></td>
+          <td><strong>d<sub>trans</sub> = L / R</strong></td>
+          <td><code>L</code> = packet size (bits), <code>R</code> = bandwidth (bps)</td>
+        </tr>
+        <tr>
+          <td><strong>Propagation Delay</strong></td>
+          <td><strong>d<sub>prop</sub> = d / s</strong></td>
+          <td><code>d</code> = distance (meters), <code>s</code> = propagation speed (≈ 2 × 10<sup>8</sup> m/s)</td>
+        </tr>
+        <tr>
+          <td><strong>Total Nodal Delay</strong></td>
+          <td><strong>d<sub>nodal</sub> = d<sub>proc</sub> + d<sub>queue</sub> + d<sub>trans</sub> + d<sub>prop</sub></strong></td>
+          <td>Sum of 4 additive delay components</td>
+        </tr>
+        <tr>
+          <td><strong>Traffic Intensity</strong></td>
+          <td><strong>I = (L · a) / R</strong></td>
+          <td><code>a</code> = arrival rate (pkts/sec), <code>I &gt; 1</code> implies packet loss</td>
+        </tr>
+        <tr>
+          <td><strong>Bandwidth-Delay Product</strong></td>
+          <td><strong>BDP = R × RTT</strong></td>
+          <td>Maximum unacknowledged in-flight bits</td>
+        </tr>
+        <tr>
+          <td><strong>Mesh Links Count</strong></td>
+          <td><strong>Links = n(n-1) / 2</strong></td>
+          <td><code>n</code> = number of participating nodes</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="172-core-high-yield-exam-distinctions">17.2 Core High-Yield Exam Distinctions</h3>
+  <div class="callout callout-info">
+    <p><strong>1. Bandwidth vs Throughput vs Goodput:</strong> Bandwidth is theoretical link ceiling; Throughput is actual measured bit rate including headers; Goodput is useful payload rate only (Goodput ≤ Throughput ≤ Bandwidth).</p>
+    <p><strong>2. Transmission Delay vs Propagation Delay:</strong> Transmission delay is the time to push bits onto the wire (L/R, halved if bandwidth doubles); Propagation delay is the time for a bit to travel the distance (d/s, unaffected by bandwidth).</p>
+    <p><strong>3. Ping vs Traceroute:</strong> Ping tests end-to-end reachability and RTT using ICMP Echo Request/Reply; Traceroute discovers the entire route path using incremental TTL expiry probes.</p>
+    <p><strong>4. Hub vs Switch vs Router:</strong> Hub broadcasts raw electrical bits at Layer 1; Switch unicasts frames using Layer 2 MAC addresses; Router forwards packets between subnets using Layer 3 IP addresses.</p>
+    <p><strong>5. Encapsulation vs Decapsulation:</strong> Encapsulation appends headers moving <strong>down</strong> the stack (7 → 1); Decapsulation parses and strips headers moving <strong>up</strong> the stack (1 → 7).</p>
+  </div>
+</section>

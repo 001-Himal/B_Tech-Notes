@@ -1,0 +1,452 @@
+<h1>Unit 1 — CLI Fundamentals Cheat Sheet</h1>
+<p class="unit-lead">A compact, practical reference for core command-line interface fundamentals across Linux, macOS, and Windows.</p>
+
+<hr>
+
+<section class="doc-section">
+  <h2 id="1-core-technical-definitions">1. Core Technical Definitions</h2>
+  <div class="callout callout-info">
+    <p><strong>Standard Streams (I/O):</strong> Pre-connected communication channels (<code>stdin</code>, <code>stdout</code>, <code>stderr</code>) initialized by the OS kernel for every running process.</p>
+    <p><strong>Pipes vs Redirection:</strong> Redirection (<code>&gt;</code>, <code>&lt;</code>) routes data between a command and disk files; Pipes (<code>|</code>) stream data in-memory directly between processes.</p>
+    <p><strong>Exit Status Code:</strong> An integer (<code>0</code> = success, <code>1</code>–<code>255</code> = error) returned by every terminated command to report execution state.</p>
+    <p><strong>Environment Variables:</strong> Dynamic key-value pairs stored in memory, defining runtime settings and automatically inherited by child processes.</p>
+    <p><strong>PATH Resolution:</strong> Semicolon/colon separated list of directories searched sequentially from left-to-right to find executable binaries.</p>
+  </div>
+</section>
+
+<hr>
+
+<section class="doc-section">
+  <h2 id="2-standard-streams-io">2. Standard Streams (I/O)</h2>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Stream Name</th>
+          <th>FD</th>
+          <th>Default Source / Sink</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Standard Input (<code>stdin</code>)</strong></td>
+          <td><code>0</code></td>
+          <td>Keyboard / Stream</td>
+          <td>Input data fed into a command</td>
+        </tr>
+        <tr>
+          <td><strong>Standard Output (<code>stdout</code>)</strong></td>
+          <td><code>1</code></td>
+          <td>Terminal Display</td>
+          <td>Standard non-error output from command</td>
+        </tr>
+        <tr>
+          <td><strong>Standard Error (<code>stderr</code>)</strong></td>
+          <td><code>2</code></td>
+          <td>Terminal Display</td>
+          <td>Diagnostic and error messages from command</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr>
+
+<section class="doc-section">
+  <h2 id="3-redirection-operators">3. Redirection Operators</h2>
+
+  <h3 id="31-redirection-operators-by-shell">3.1 Redirection Operators by Shell (Linux / macOS / Windows)</h3>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Operator</th>
+          <th>Purpose</th>
+          <th>Linux / macOS Example</th>
+          <th>Windows CMD Example</th>
+          <th>PowerShell Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>&gt;</code></td>
+          <td>Redirect stdout (overwrite)</td>
+          <td><code>echo "hi" &gt; file.txt</code></td>
+          <td><code>echo hi &gt; file.txt</code></td>
+          <td><code>"hi" &gt; file.txt</code></td>
+        </tr>
+        <tr>
+          <td><code>&gt;&gt;</code></td>
+          <td>Redirect stdout (append)</td>
+          <td><code>echo "log" &gt;&gt; app.log</code></td>
+          <td><code>echo log &gt;&gt; app.log</code></td>
+          <td><code>"log" &gt;&gt; app.log</code></td>
+        </tr>
+        <tr>
+          <td><code>&lt;</code></td>
+          <td>Redirect stdin from file</td>
+          <td><code>mysql db &lt; backup.sql</code></td>
+          <td><code>cmd &lt; input.txt</code></td>
+          <td><code>Get-Content in.txt | cmd</code></td>
+        </tr>
+        <tr>
+          <td><code>2&gt;</code></td>
+          <td>Redirect stderr (overwrite)</td>
+          <td><code>make 2&gt; errors.log</code></td>
+          <td><code>compile 2&gt; err.log</code></td>
+          <td><code>compile 2&gt; err.log</code></td>
+        </tr>
+        <tr>
+          <td><code>2&gt;&gt;</code></td>
+          <td>Redirect stderr (append)</td>
+          <td><code>app 2&gt;&gt; errors.log</code></td>
+          <td><code>app 2&gt;&gt; err.log</code></td>
+          <td><code>app 2&gt;&gt; err.log</code></td>
+        </tr>
+        <tr>
+          <td><code>2&gt;&amp;1</code></td>
+          <td>Merge stderr into stdout</td>
+          <td><code>cmd &gt; all.log 2&gt;&amp;1</code></td>
+          <td><code>cmd &gt; all.log 2&gt;&amp;1</code></td>
+          <td><code>cmd &gt; all.log 2&gt;&amp;1</code></td>
+        </tr>
+        <tr>
+          <td><code>&amp;&gt;</code></td>
+          <td>Redirect stdout &amp; stderr</td>
+          <td><code>cmd &amp;&gt; all.log</code></td>
+          <td><code>cmd &gt; all.log 2&gt;&amp;1</code></td>
+          <td><code>cmd *&gt; all.log</code></td>
+        </tr>
+        <tr>
+          <td>Discard Output</td>
+          <td>Black hole / Null sink</td>
+          <td><code>cmd &gt; /dev/null 2&gt;&amp;1</code></td>
+          <td><code>cmd &gt; NUL 2&gt;&amp;1</code></td>
+          <td><code>cmd | Out-Null</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="32-important-options-redirection-patterns">3.2 Important Options &amp; Redirection Patterns</h3>
+  <pre><code>2&gt; /dev/null   → silence all error output on Linux/macOS
+&gt; NUL 2&gt;&amp;1     → silence all output completely on Windows CMD
+*&gt; output.log  → redirect all 6 PowerShell streams (Output, Error, Warning, Verbose, Debug, Info)
+&lt;&lt;&lt; "string"   → herestring: pass direct string into stdin (Bash/Zsh)
+&lt;&lt; 'EOF'       → heredoc: pass multi-line text block to stdin</code></pre>
+</section>
+
+<hr>
+
+<section class="doc-section">
+  <h2 id="4-pipelines">4. Pipelines (<code>|</code>)</h2>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Mechanism</th>
+          <th>Linux / macOS (POSIX)</th>
+          <th>Windows CMD</th>
+          <th>PowerShell Core</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Data Format</strong></td>
+          <td>Byte / Text stream</td>
+          <td>ASCII / ANSI Text stream</td>
+          <td>Strongly-typed .NET Objects</td>
+        </tr>
+        <tr>
+          <td><strong>Basic Pipe</strong></td>
+          <td><code>cat log | grep ERROR</code></td>
+          <td><code>type log | find "ERROR"</code></td>
+          <td><code>Get-Content log | Select-String "ERROR"</code></td>
+        </tr>
+        <tr>
+          <td><strong>Pipe Both Streams</strong></td>
+          <td><code>cmd |&amp; grep "fail"</code></td>
+          <td><code>cmd 2&gt;&amp;1 | find "fail"</code></td>
+          <td><code>cmd 2&gt;&amp;1 | Select-String "fail"</code></td>
+        </tr>
+        <tr>
+          <td><strong>Count Lines</strong></td>
+          <td><code>cat file | wc -l</code></td>
+          <td><code>type file | find /c /v ""</code></td>
+          <td><code>(Get-Content file).Count</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr>
+
+<section class="doc-section">
+  <h2 id="5-exit-codes-conditional-chaining">5. Exit Codes &amp; Conditional Chaining</h2>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Operator</th>
+          <th>Meaning</th>
+          <th>Example</th>
+          <th>Behavior</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>&amp;&amp;</code></td>
+          <td>Logical AND</td>
+          <td><code>build &amp;&amp; deploy</code></td>
+          <td>Runs right command ONLY if left command succeeds (Exit 0)</td>
+        </tr>
+        <tr>
+          <td><code>||</code></td>
+          <td>Logical OR</td>
+          <td><code>test -f f || touch f</code></td>
+          <td>Runs right command ONLY if left command fails (Exit ≠ 0)</td>
+        </tr>
+        <tr>
+          <td><code>;</code></td>
+          <td>Sequential</td>
+          <td><code>mkdir d ; cd d</code></td>
+          <td>Runs sequentially regardless of success or failure</td>
+        </tr>
+        <tr>
+          <td><code>&amp;</code></td>
+          <td>Background (POSIX)</td>
+          <td><code>python -m http.server &amp;</code></td>
+          <td>Runs command asynchronously in background subshell</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="51-inspecting-exit-status-codes">5.1 Inspecting Exit Status Codes</h3>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Shell</th>
+          <th>Syntax</th>
+          <th>Success Value</th>
+          <th>Error Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Bash / Zsh (Linux/macOS)</strong></td>
+          <td><code>echo $?</code></td>
+          <td><code>0</code></td>
+          <td><code>1</code> – <code>255</code></td>
+        </tr>
+        <tr>
+          <td><strong>Windows CMD</strong></td>
+          <td><code>echo %ERRORLEVEL%</code></td>
+          <td><code>0</code></td>
+          <td>Non-zero</td>
+        </tr>
+        <tr>
+          <td><strong>PowerShell</strong></td>
+          <td><code>$LASTEXITCODE</code> or <code>$?</code></td>
+          <td><code>0</code> (or <code>$true</code>)</td>
+          <td>Non-zero (or <code>$false</code>)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr>
+
+<section class="doc-section">
+  <h2 id="6-command-anatomy-parameter-parsing">6. Command Anatomy &amp; Parameter Parsing</h2>
+  <pre><code>command  -a  -b 20  --flag  --option=value  arg1  arg2
+───┬───  ────┬────  ──────────────┬───────  ─────┬─────
+Command  Short flags    Long options      Positional arguments</code></pre>
+
+  <h3 id="61-argument-syntax-reference">6.1 Argument Syntax Reference</h3>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Component</th>
+          <th>Linux / macOS (POSIX / GNU)</th>
+          <th>Windows CMD</th>
+          <th>PowerShell</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Short Flags</strong></td>
+          <td><code>-a</code>, <code>-la</code> (grouped)</td>
+          <td><code>/a</code>, <code>/s</code>, <code>/q</code></td>
+          <td><code>-f</code>, <code>-v</code></td>
+        </tr>
+        <tr>
+          <td><strong>Long Options</strong></td>
+          <td><code>--all</code>, <code>--file=data.txt</code></td>
+          <td><code>/format:table</code></td>
+          <td><code>-Path "data.txt"</code></td>
+        </tr>
+        <tr>
+          <td><strong>Positional Args</strong></td>
+          <td><code>$1</code>, <code>$2</code>, <code>$3</code></td>
+          <td><code>%1</code>, <code>%2</code>, <code>%3</code></td>
+          <td><code>$args[0]</code>, <code>$param1</code></td>
+        </tr>
+        <tr>
+          <td><strong>All Arguments</strong></td>
+          <td><code>"$@"</code> or <code>"$*"</code></td>
+          <td><code>%*</code></td>
+          <td><code>$args</code> or <code>$PSBoundParameters</code></td>
+        </tr>
+        <tr>
+          <td><strong>Argument Count</strong></td>
+          <td><code>$#</code></td>
+          <td><em>(count in batch loop)</em></td>
+          <td><code>$args.Count</code></td>
+        </tr>
+        <tr>
+          <td><strong>Script Name</strong></td>
+          <td><code>$0</code></td>
+          <td><code>%0</code></td>
+          <td><code>$MyInvocation.MyCommand.Name</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr>
+
+<section class="doc-section">
+  <h2 id="7-variables-quoting-mechanics">7. Variables &amp; Quoting Mechanics</h2>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Linux / macOS (Bash/Zsh)</th>
+          <th>Windows CMD</th>
+          <th>PowerShell</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Set Local Variable</strong></td>
+          <td><code>VAR="hello"</code></td>
+          <td><code>set VAR=hello</code></td>
+          <td><code>$Var = "hello"</code></td>
+        </tr>
+        <tr>
+          <td><strong>Access Variable</strong></td>
+          <td><code>$VAR</code> or <code>${VAR}</code></td>
+          <td><code>%VAR%</code></td>
+          <td><code>$Var</code></td>
+        </tr>
+        <tr>
+          <td><strong>Single Quotes <code>'...'</code></strong></td>
+          <td>Literal (no expansion)</td>
+          <td>Treated as regular text</td>
+          <td>Literal (no expansion)</td>
+        </tr>
+        <tr>
+          <td><strong>Double Quotes <code>"..."</code></strong></td>
+          <td>Interpolates <code>$VAR</code>, <code>$(cmd)</code></td>
+          <td>Expands <code>%VAR%</code></td>
+          <td>Interpolates <code>$Var</code>, <code>$($cmd)</code></td>
+        </tr>
+        <tr>
+          <td><strong>Command Substitution</strong></td>
+          <td><code>DATE=$(date +%F)</code></td>
+          <td><code>for /f %%i in ('date /t') do...</code></td>
+          <td><code>$Date = (Get-Date)</code></td>
+        </tr>
+        <tr>
+          <td><strong>Environment Variable</strong></td>
+          <td><code>export PORT=8080</code></td>
+          <td><code>setx PORT "8080"</code></td>
+          <td><code>$env:PORT = "8080"</code></td>
+        </tr>
+        <tr>
+          <td><strong>Path Variable</strong></td>
+          <td><code>$PATH</code> (colon separated)</td>
+          <td><code>%PATH%</code> (semicolon separated)</td>
+          <td><code>$env:PATH</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr>
+
+<section class="doc-section">
+  <h2 id="8-fundamental-cross-platform-cheat-sheet">8. Fundamental Cross-Platform Cheat Sheet</h2>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Task</th>
+          <th>Linux / macOS (Bash/Zsh)</th>
+          <th>Windows CMD</th>
+          <th>Windows PowerShell</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Print text</strong></td>
+          <td><code>echo "Hello"</code></td>
+          <td><code>echo Hello</code></td>
+          <td><code>Write-Host "Hello"</code></td>
+        </tr>
+        <tr>
+          <td><strong>Current directory</strong></td>
+          <td><code>pwd</code></td>
+          <td><code>cd</code></td>
+          <td><code>Get-Location</code> (<code>pwd</code>, <code>gl</code>)</td>
+        </tr>
+        <tr>
+          <td><strong>List directory</strong></td>
+          <td><code>ls -la</code></td>
+          <td><code>dir /a</code></td>
+          <td><code>Get-ChildItem -Force</code> (<code>gci</code>, <code>ls</code>)</td>
+        </tr>
+        <tr>
+          <td><strong>Clear screen</strong></td>
+          <td><code>clear</code> (<code>Ctrl+L</code>)</td>
+          <td><code>cls</code></td>
+          <td><code>Clear-Host</code> (<code>cls</code>, <code>clear</code>)</td>
+        </tr>
+        <tr>
+          <td><strong>Read stdin prompt</strong></td>
+          <td><code>read -p "Name: " val</code></td>
+          <td><code>set /p val="Name: "</code></td>
+          <td><code>$val = Read-Host "Name"</code></td>
+        </tr>
+        <tr>
+          <td><strong>Locate executable</strong></td>
+          <td><code>which node</code> / <code>type -a node</code></td>
+          <td><code>where node</code></td>
+          <td><code>Get-Command node</code></td>
+        </tr>
+        <tr>
+          <td><strong>Print all env vars</strong></td>
+          <td><code>env</code> / <code>printenv</code></td>
+          <td><code>set</code></td>
+          <td><code>Get-ChildItem env:</code></td>
+        </tr>
+        <tr>
+          <td><strong>Sleep / Pause</strong></td>
+          <td><code>sleep 5</code></td>
+          <td><code>timeout /t 5</code></td>
+          <td><code>Start-Sleep -Seconds 5</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

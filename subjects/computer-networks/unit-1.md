@@ -1,149 +1,344 @@
 # Unit 1 — Introduction & Network Models
 
-CSE306: Computer Networks — Unit I covers the complete foundation of computer networking: definitions, types, hardware, architecture, topologies, protocols, the OSI model, and the TCP/IP protocol suite.
+CSE306: Computer Networks — Unit I covers the complete foundation of computer networking: definitions, data communication, performance metrics, delays, diagnostics, hardware, architecture, topologies, protocols, the OSI 7-layer model, and the TCP/IP protocol suite.
 
 ---
 
 ## 1. Computer Networks
 
-### What is a Computer Network?
+### 1.1 What is a Computer Network?
 
-A computer network is a collection of interconnected computers and other devices that communicate with each other to exchange data and share resources and services.
+A computer network is a collection of autonomous, interconnected computing devices that communicate with each other over shared physical or wireless transmission media using standardized protocols to exchange data and share resources.
 
 ![Basic Computer Network Architecture](subjects/computer-networks/images/basic-network-diagram.jpg)
 
-The computers can communicate because they are connected through networking devices (switches, routers) and use common communication protocols over physical or wireless links.
+The interconnected devices (hosts, switches, routers, servers) communicate by packetizing data and forwarding it across point-to-point or multi-access communication links.
 
-### Goals / Purposes of Computer Networks
+### 1.2 Core Goals & Purposes of Computer Networks
 
-> **1. Resource Sharing:** Allows multiple users to share expensive hardware resources such as printers, centralized storage arrays, internet gateways, and server compute.
+> **1. Resource Sharing:** Allows multiple clients to share expensive physical hardware resources (high-throughput printers, storage arrays, compute clusters, GPU pools).
 >
-> **2. Data Sharing:** Enables seamless exchange of files, database records, media streams, and collaborative workspaces.
+> **2. Data Sharing:** Enables seamless transfer and collaborative access to files, centralized databases, and distributed media streams.
 >
-> **3. Communication:** Real-time messaging, email, voice-over-IP (VoIP), and video conferencing.
+> **3. Communication:** Low-latency human-to-human and machine-to-machine exchange (email, messaging, VoIP, video conferencing, IoT telemetry).
 >
-> **4. Remote Access:** Employees and administrators can access internal applications and services securely from any location.
+> **4. Remote Access:** Employees and system administrators can securely operate internal corporate services and terminals from arbitrary remote locations.
 >
-> **5. Centralized Management:** Organizations can enforce centralized authentication, security policies, backup routines, and software updates.
+> **5. High Reliability & Redundancy:** Replicating services across multiple nodes prevents single points of failure, ensuring high availability.
 >
-> **6. High Reliability & Redundancy:** Replicating files and services across multiple servers ensures high availability even if a single device fails.
+> **6. Scalability & Cost Reduction:** Workloads can be distributed across modular commodity hardware rather than requiring monolithic mainframe systems.
 
 ---
 
 ## 2. Data Communication Basics
 
-### What is Data Communication?
+### 2.1 What is Data Communication?
 
-Data communication is the electronic transfer of data between two or more devices via a transmission medium.
+Data communication is the electronic transfer of data represented in digital or analog form between two communicating endpoints across an intermediary transmission path.
 
 ```text
 Sender ─────────[ Transmission Medium ]─────────→ Receiver
                     (Rule: Protocol)
 ```
 
-For successful transmission, communicating nodes must follow standardized syntax and timing rules known as **protocols**.
+For successful communication to occur, data delivery must satisfy four fundamental criteria:
+1. **Delivery:** Data must arrive at the correct intended destination host and process.
+2. **Accuracy:** Data must arrive unaltered without uncorrected bit errors.
+3. **Timeliness:** Data must arrive within acceptable delay bounds (especially for real-time video/audio).
+4. **Jitter:** Packet arrival variance must remain minimal to avoid buffer under-runs.
 
 ![5 Components of Data Communication System](subjects/computer-networks/images/data-communication-components.jpg)
 
-### Five Essential Components of Data Communication
+### 2.2 Five Essential Components of Data Communication
 
 | # | Component | Technical Role | Practical Example |
 |---|---|---|---|
-| **1** | **Sender** | Device that generates and initiates data transmission | Laptop, smartphone, IoT sensor |
-| **2** | **Receiver** | Device designated to accept the incoming transmission | Web server, database host, printer |
-| **3** | **Message** | Information payload being communicated | Binary file, HTTP request, video frame |
-| **4** | **Transmission Medium** | Physical/wireless channel transporting signals | Twisted-pair Cat6, Fiber-optic, Wi-Fi radio waves |
-| **5** | **Protocol** | Set of governing rules controlling data format, error check & timing | TCP/IP, HTTPS, IEEE 802.11 |
+| **1** | **Sender (Source)** | Device that generates and initiates data transmission | Workstation, smartphone, IoT telemetry sensor |
+| **2** | **Receiver (Sink)** | Device designated to accept and process incoming data | Web server, database host, network printer |
+| **3** | **Message (Payload)** | Information payload being communicated | Binary file, JSON payload, video stream, VoIP packet |
+| **4** | **Transmission Medium** | Physical or wireless channel transporting signals | Twisted-pair Cat6, Fiber-optic cable, 5GHz Wi-Fi radio waves |
+| **5** | **Protocol** | Standardized set of rules governing formatting, timing & error control | TCP/IP, HTTPS, IEEE 802.3 Ethernet, IEEE 802.11 |
 
 ---
 
 ## 3. Communication Modes (Transmission Modes)
 
-Communication mode defines the directional capability of data flow between two interconnected systems.
+Communication mode defines the directional capability of signal transmission between two interconnected endpoints.
 
 ![Transmission Modes: Simplex, Half-Duplex, Full-Duplex](subjects/computer-networks/images/transmission-modes.jpg)
 
-### Simplex Mode
+### 3.1 Simplex Mode (Unidirectional)
 
-Data travels strictly in **one direction** (unidirectional). The transmitter sends data; the receiver can only accept it with no mechanism to respond over the same channel.
+Data travels strictly in **one direction** (unidirectional). The sender can only transmit data; the receiver can only receive data with no hardware or logical capability to respond over the same channel.
 
 ```text
 Sender [ A ] ──────────────────────────────────────────→ [ B ] Receiver
 ```
 
-> **Examples:** Traditional keyboard to CPU, television broadcast, FM radio.
+> **Examples:** Keyboard to CPU bus, GPS satellite broadcasts, traditional FM radio/television broadcasting.
 
-### Half-Duplex Mode
+### 3.2 Half-Duplex Mode (Alternating Bidirectional)
 
-Data can travel in **both directions, but not simultaneously**. Each end can transmit or receive, but while one is transmitting, the other must listen.
+Data can travel in **both directions, but not simultaneously**. Each connected station can transmit and receive, but when one station is transmitting, the other must listen. The entire bandwidth of the physical channel is dedicated to the transmitting station during its time slice.
 
 ```text
 Sender / Receiver [ A ] ────────── (Time 1: →) ──────────→ [ B ] Receiver / Sender
 Sender / Receiver [ A ] ←────────── (Time 2: ←) ────────── [ B ] Receiver / Sender
 ```
 
-> **Examples:** Walkie-talkies (push-to-talk), legacy IEEE 802.3 shared-bus Ethernet with CSMA/CD.
+> **Examples:** Walkie-talkies (Push-to-Talk), legacy shared-bus Ethernet using CSMA/CD, Wi-Fi radio channels.
 
-### Full-Duplex Mode
+### 3.3 Full-Duplex Mode (Simultaneous Bidirectional)
 
-Data travels in **both directions simultaneously**. Both communicating nodes can transmit and receive concurrently using separate physical channels or frequency division.
+Data travels in **both directions simultaneously**. Both endpoints can transmit and receive concurrently because the link contains two physically separate transmission paths or divides channel frequency using Frequency Division Duplexing (FDD).
 
 ```text
 Node [ A ] ⇄══════════════════════════════════════════════⇄ [ B ] Node
 ```
 
-> **Examples:** Telephone call, modern switched Ethernet connections, bidirectional TCP socket connections.
+> **Examples:** Modern switched Full-Duplex Ethernet (100BASE-TX, 1000BASE-T), cellular phone calls, bidirectional TCP socket streams.
 
-### Transmission Modes Comparison
+### 3.4 Transmission Modes Comparison Matrix
 
 | Mode | Directionality | Simultaneous Tx/Rx? | Channel Efficiency | Practical Example |
 |---|---|---|---|---|
-| **Simplex** | Unidirectional ($A \to B$) | No | Low (one-way only) | Keyboard $\to$ Computer |
-| **Half-Duplex** | Bidirectional ($A \rightleftarrows B$) | No (Alternating) | Moderate | Walkie-Talkie |
-| **Full-Duplex** | Bidirectional ($A \rightleftarrows B$) | Yes (Simultaneous) | High (Full bandwidth) | Switched Ethernet, Phone Call |
+| **Simplex** | Unidirectional ($A \to B$) | No | Low (one-way only) | Keyboard $\to$ Computer, GPS |
+| **Half-Duplex** | Bidirectional ($A \rightleftarrows B$) | No (Alternating) | Moderate (Turnaround overhead) | Walkie-Talkie, Half-duplex Wi-Fi |
+| **Full-Duplex** | Bidirectional ($A \rightleftarrows B$) | Yes (Simultaneous) | High (Full dedicated bandwidth) | Switched Ethernet, Phone Call |
 
 ---
 
-## 4. Connection Types & Data Delivery
+## 4. Connection Types & Data Delivery Cast Modes
 
-### Line Configuration: Point-to-Point vs Multipoint
+### 4.1 Line Configuration: Point-to-Point vs Multipoint
 
 ![Point-to-Point Connection](subjects/computer-networks/images/point-to-point.jpg)
 
-- **Point-to-Point:** A dedicated physical link between exactly two communicating devices. The entire bandwidth capacity of the channel is reserved exclusively for these two nodes (e.g. dedicated leased line between two core routers).
+- **Point-to-Point:** A dedicated physical link between exactly two communicating devices. The entire capacity of the channel is reserved exclusively for transmission between those two nodes (e.g. dedicated leased line between two core routers, microwave link).
 
 ![Multipoint Connection Topology](subjects/computer-networks/images/multipoint-topology.jpg)
 
-- **Multipoint (Multi-drop):** A single physical transmission medium is shared among three or more devices simultaneously (e.g. Wi-Fi airspace, legacy coax bus).
+- **Multipoint (Multi-drop):** A single shared transmission medium is shared among three or more devices simultaneously either spatially or through time sharing (e.g. Wi-Fi airspace, legacy coaxial bus).
 
 ---
 
-### Data Delivery Cast Modes: Unicast, Multicast & Broadcast
+### 4.2 Data Delivery Cast Modes: Unicast, Multicast & Broadcast
 
 ![Unicast vs Multicast vs Broadcast](subjects/computer-networks/images/unicast-multicast-broadcast.jpg)
 
 | Mode | Addressing Scheme | Target Ratio | Practical Example |
 |---|---|---|---|
-| **Unicast** | Specific destination host IP/MAC | **$1 \to 1$** (One-to-One) | Loading a webpage via HTTPS (`192.168.1.10` $\to$ `93.184.216.34`) |
-| **Multicast** | Class D multicast group IP (`224.0.0.0/4`) | **$1 \to \text{Group}$** (One-to-Many) | Live IPTV stream, Zoom video feed, OSPF router hellos |
+| **Unicast** | Specific destination host IP / MAC | **$1 \to 1$** (One-to-One) | Loading a webpage via HTTPS (`192.168.1.10` $\to$ `93.184.216.34`) |
+| **Multicast** | Class D multicast group IP (`224.0.0.0/4`) | **$1 \to \text{Group}$** (One-to-Many) | Live IPTV stream, Zoom video feed, OSPF router hellos (`224.0.0.5`) |
 | **Broadcast** | Broadcast address (`255.255.255.255` or subnet broadcast) | **$1 \to \text{All}$** (One-to-All) | ARP Request ("Who has IP `192.168.1.1`?"), DHCP Discover |
 
 ---
 
-## 5. Types of Networks by Geographical Scale
+## 5. Network Performance Metrics: Bandwidth, Throughput & Goodput
+
+Understanding how network speed and capacity are measured is critical for network engineering and university exams.
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│ 1. BANDWIDTH (Link Capacity: e.g. 1 Gbps)                  │
+│   ├── 2. THROUGHPUT (Actual bits delivered: e.g. 850 Mbps) │
+│   │     └── 3. GOODPUT (Pure payload data: e.g. 800 Mbps)  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 5.1 Bandwidth (Theoretical Capacity)
+- **Definition:** The maximum theoretical data transfer rate of a communication channel, measured in bits per second (bps, Mbps, Gbps).
+- **Analogy:** The width of a highway (e.g. an 8-lane highway represents higher bandwidth than a 2-lane road).
+- **Unit:** $\text{bps}, \text{Kbps } (10^3), \text{Mbps } (10^6), \text{Gbps } (10^9), \text{Tbps } (10^{12})$.
+
+### 5.2 Throughput (Actual Transfer Rate)
+- **Definition:** The actual volume of data successfully transmitted across a network link in a given time interval, taking into account congestion, protocol overhead, and retransmissions.
+- **Formula:** 
+  $$\text{Throughput} = \frac{\text{Total Bits Received (including headers)}}{\text{Time Taken (seconds)}}$$
+- **Constraint:** Throughput is always strictly $\le$ Bandwidth ($\text{Throughput} \le \text{Bandwidth}$).
+- **Bottleneck Rule:** In a multi-hop path, end-to-end throughput is bounded by the slowest link:
+  $$\text{Throughput}_{\text{end-to-end}} = \min(R_1, R_2, \dots, R_n)$$
+
+### 5.3 Goodput (Application Payload Rate)
+- **Definition:** The rate at which useful application-level payload data (excluding all protocol headers, trailers, retransmitted corrupted packets, and handshakes) is delivered to the destination process.
+- **Formula:**
+  $$\text{Goodput} = \frac{\text{Useful Application Data Bits (excluding headers)}}{\text{Time Taken (seconds)}}$$
+- **Hierarchy:** $\text{Goodput} \le \text{Throughput} \le \text{Bandwidth}$.
+
+### 5.4 Performance Metrics Comparison Matrix
+
+| Metric | Measured Entity | Includes Protocol Headers? | Includes Retransmissions? | Typical Value on $1\text{ Gbps}$ Link |
+|---|---|---|---|---|
+| **Bandwidth** | Maximum theoretical link capacity | N/A (Hardware limit) | N/A | $1000\text{ Mbps}$ ($1\text{ Gbps}$) |
+| **Throughput** | Actual raw data delivered over link | **Yes** (IP, TCP, MAC headers) | **Yes** (Duplicate packets included) | $\approx 850 - 940\text{ Mbps}$ |
+| **Goodput** | Useful application payload delivered | **No** (Payload only) | **No** (Unique payload only) | $\approx 800 - 890\text{ Mbps}$ |
+
+---
+
+## 6. Latency, Jitter, Packet Loss & The Four Sources of Delay
+
+### 6.1 Total Nodal Delay Formula
+
+When a packet travels from a source to a destination through a series of intermediate routers, the total nodal delay ($d_{\text{nodal}}$) at each router consists of **four additive components**:
+
+$$\mathbf{d_{\text{nodal}} = d_{\text{proc}} + d_{\text{queue}} + d_{\text{trans}} + d_{\text{prop}}}$$
+
+```text
+Incoming Packet
+       │
+       ▼
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│  Processing  │ ──→ │   Queuing    │ ──→ │ Transmission │ ──→ [ Physical Link ] ──→ Propagation Delay ──→ Next Router
+│ Delay (dproc)│     │ Delay (dqueue│     │ Delay (dtrans│                              (dprop)
+└──────────────┘     └──────────────┘     └──────────────┘
+```
+
+---
+
+### 6.2 The Four Sources of Delay In-Depth
+
+#### 1. Nodal Processing Delay ($d_{\text{proc}}$)
+- **What it is:** The time required for the router CPU or ASIC to examine the packet header, determine where to direct the packet, verify checksums for bit errors, and update TTL.
+- **Typical Duration:** Microseconds ($\mu\text{s}$) or nanoseconds on modern hardware.
+
+#### 2. Queuing Delay ($d_{\text{queue}}$)
+- **What it is:** The time a packet spends waiting in the router's transmission buffer queue until the outbound link becomes available.
+- **Variable Nature:** Dynamic! Depends entirely on network congestion.
+- **Traffic Intensity Formula ($I$):**
+  $$I = \frac{L \cdot a}{R}$$
+  - $L = \text{Packet length in bits}$
+  - $a = \text{Average packet arrival rate (packets/second)}$
+  - $R = \text{Link bandwidth (transmission rate in bps)}$
+  - If $I \approx 0$: Queuing delay is near zero.
+  - If $I \to 1$: Queuing delay grows exponentially (queues fill up).
+  - If $I > 1$: Arriving traffic exceeds link capacity; buffer overflows causing **Packet Loss** (queue drop).
+
+#### 3. Transmission Delay ($d_{\text{trans}}$ / Store-and-Forward Delay)
+- **What it is:** The time required to push (serialize) all bits of a packet onto the physical transmission medium.
+- **Formula:**
+  $$\mathbf{d_{\text{trans}} = \frac{L}{R}}$$
+  - $L = \text{Packet size in bits}$
+  - $R = \text{Transmission rate / Bandwidth of link in bps}$
+- **Depends on:** Packet size and link bandwidth (independent of distance!).
+
+#### 4. Propagation Delay ($d_{\text{prop}}$)
+- **What it is:** The time required for a single bit to physically travel through the transmission medium from sender to receiver.
+- **Formula:**
+  $$\mathbf{d_{\text{prop}} = \frac{d}{s}}$$
+  - $d = \text{Physical distance between communicating nodes (meters)}$
+  - $s = \text{Propagation speed of signal in medium } (\approx 2 \times 10^8\text{ m/s in copper/fiber})$
+- **Depends on:** Distance and physical medium speed (independent of packet size or bandwidth!).
+
+---
+
+### 6.3 Transmission Delay vs Propagation Delay (High-Yield Exam Comparison)
+
+| Parameter | Transmission Delay ($d_{\text{trans}}$) | Propagation Delay ($d_{\text{prop}}$) |
+|---|---|---|
+| **Core Definition** | Time to push all packet bits onto the link | Time for a bit to physically travel across the link |
+| **Mathematical Formula** | **$d_{\text{trans}} = \frac{L}{R}$** | **$d_{\text{prop}} = \frac{d}{s}$** |
+| **Governing Factors** | Packet length ($L$) and Link bandwidth ($R$) | Physical distance ($d$) and Propagation speed ($s$) |
+| **Highway Toll Analogy** | Time for toll booth to service and release a convoy of cars | Time for cars to drive the distance between two toll booths |
+| **Impact of Doubling Bandwidth ($R$)** | **Halved ($50\%$ reduction)** | **Zero effect (Unchanged)** |
+| **Impact of Doubling Distance ($d$)** | **Zero effect (Unchanged)** | **Doubled ($100\%$ increase)** |
+
+---
+
+### 6.4 Bandwidth-Delay Product (BDP)
+
+The **Bandwidth-Delay Product (BDP)** measures the maximum volume of unacknowledged data that can be in flight in the network channel at any single moment:
+
+$$\mathbf{\text{BDP} = R \times \text{RTT}} \quad \text{or} \quad \mathbf{\text{BDP} = R \times d_{\text{prop}}}$$
+
+- **Significance:** Represents the ideal TCP receive window buffer size required to fully saturate a high-speed link without stalling.
+- **Example Calculation:** On a $1\text{ Gbps}$ link with $50\text{ ms}$ RTT:
+  $$\text{BDP} = 10^9\text{ bps} \times 0.05\text{ s} = 50,000,000\text{ bits} \approx 6.25\text{ MB}$$
+
+---
+
+### 6.5 Latency, Jitter & Bufferbloat
+
+- **Latency (Round-Trip Time / RTT):** The total time required for a packet to travel from the sender to the receiver and for the acknowledgment to return ($2 \times d_{\text{one-way}}$).
+- **Jitter (Packet Delay Variation / PDV):** The statistical variation in latency between consecutive packets in a stream:
+  $$\text{Jitter} = | \text{Latency}_{n} - \text{Latency}_{n-1} |$$
+- **Impact of Jitter:** High jitter causes stutter, robotic distortion, and buffer underruns in real-time applications (VoIP, video calls, cloud gaming).
+- **Bufferbloat:** Excessive buffering inside consumer routers that introduces seconds of artificial queuing delay during high-bandwidth uploads.
+
+---
+
+### 6.6 Packet Loss & Bit Error Rate (BER)
+
+- **Packet Loss:** Occurs when one or more packets fail to reach their destination, primarily caused by **router queue overflows during congestion** or physical transmission noise.
+- **Bit Error Rate (BER):** The ratio of erroneous received bits to the total number of transmitted bits:
+  $$\text{BER} = \frac{\text{Number of Bit Errors}}{\text{Total Bits Transmitted}}$$
+- **Handling:** TCP detects packet loss via triple duplicate ACKs or retransmission timeouts (RTO) and retransmits missing packets while slashing its congestion window.
+
+---
+
+## 7. Network Diagnostics & Troubleshooting CLI Utilities
+
+Network engineers use standardized command-line diagnostic tools to inspect routing paths, latency, and socket states.
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│ 1. PING         ─── ICMP Echo (Checks reachability & RTT)   │
+│ 2. TRACEROUTE   ─── ICMP TTL Expiry (Maps router path hops) │
+│ 3. NETSTAT / SS ─── Active TCP/UDP sockets and ports        │
+│ 4. NSLOOKUP/DIG ─── DNS record resolution queries           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 7.1 Ping (Packet Internet Groper)
+- **Protocol Used:** **ICMP (Internet Control Message Protocol)** at Layer 3 (IP Protocol `1`).
+- **Mechanism:** Sends **ICMP Echo Request** (Type 8, Code 0) packets to a target host. The target responds with **ICMP Echo Reply** (Type 0, Code 0).
+- **Key Metrics Provided:** Round-trip latency (min/avg/max/mdev), packet loss percentage, and returned Time-to-Live (TTL).
+- **Example Usage:**
+  ```bash
+  # Send 4 ICMP echo probes
+  ping -c 4 8.8.8.8
+  ```
+
+---
+
+### 7.2 Traceroute / Tracert (Path Discovery & Hop Identification)
+- **Purpose:** Discovers and displays the exact sequence of Layer 3 routers (hops) traversed by packets to reach a destination.
+- **Mechanism (TTL Expiry Probe):**
+  1. Sends a probe packet with $\text{TTL} = 1$. The first router decrements $\text{TTL} = 0$, drops the packet, and returns an **ICMP Time Exceeded** message (Type 11, Code 0), revealing Router 1's IP.
+  2. Sends probe with $\text{TTL} = 2 \to$ Router 2 drops packet and returns ICMP Time Exceeded.
+  3. Increments TTL sequentially ($\text{TTL} = 3, 4, 5, \dots$) until the destination host is reached.
+- **Platform Implementations:**
+  - **Linux / macOS (`traceroute`):** Sends UDP datagrams to high-numbered ports (or ICMP with `-I`).
+  - **Windows (`tracert`):** Sends ICMP Echo Request messages by default.
+
+---
+
+### 7.3 Core Diagnostic CLI Utilities Reference
+
+| Tool | Underlying Protocol | Primary Diagnostic Purpose | Quick Example Command |
+|---|---|---|---|
+| **`ping`** | ICMP (Type 8/0) | Verify host reachability and measure round-trip latency | `ping -c 4 1.1.1.1` |
+| **`traceroute`** / **`tracert`** | ICMP / UDP (TTL manipulation) | Map router hops and identify intermediate routing bottlenecks | `traceroute google.com` |
+| **`netstat`** / **`ss`** | Kernel Socket API | Inspect open TCP/UDP ports, listening sockets, and connections | `ss -tulpn` or `netstat -ano` |
+| **`nslookup`** / **`dig`** | DNS (UDP port 53) | Query DNS name servers for A, AAAA, MX, and CNAME records | `dig google.com +short` |
+| **`ip`** / **`ifconfig`** | Netlink / ioctl | Inspect and configure network interfaces, IP addresses, MTU | `ip addr show` |
+| **`arp`** | ARP (Layer 2/3) | View and manage the local IP-to-MAC address resolution cache | `arp -a` |
+
+---
+
+## 8. Types of Networks by Geographical Scale
 
 Networks are classified based on the physical distance and geographic area they span.
 
 ![PAN, LAN, MAN, WAN Geographical Coverage](subjects/computer-networks/images/pan-lan-man-wan.jpg)
 
-### 1. PAN — Personal Area Network
+### 8.1 PAN — Personal Area Network
 - **Coverage Range:** $\approx 1$ to 10 meters (centered around an individual).
 - **Technologies:** Bluetooth (IEEE 802.15.1), Zigbee, USB, NFC.
 - **Use Cases:** Connecting smartphone to smartwatch, wireless earbuds, or vehicle hands-free.
 
 ---
 
-### 2. LAN — Local Area Network
+### 8.2 LAN — Local Area Network
 
 ![Local Area Network (LAN)](subjects/computer-networks/images/lan-diagram.jpg)
 
@@ -154,7 +349,7 @@ Networks are classified based on the physical distance and geographic area they 
 
 ---
 
-### 3. MAN — Metropolitan Area Network
+### 8.3 MAN — Metropolitan Area Network
 
 ![Metropolitan Area Network (MAN)](subjects/computer-networks/images/man-diagram.jpg)
 
@@ -165,7 +360,7 @@ Networks are classified based on the physical distance and geographic area they 
 
 ---
 
-### 4. WAN — Wide Area Network
+### 8.4 WAN — Wide Area Network
 
 ![Wide Area Network (WAN)](subjects/computer-networks/images/wan-diagram.jpg)
 
@@ -176,7 +371,7 @@ Networks are classified based on the physical distance and geographic area they 
 
 ---
 
-### Geographical Scale Comparison Matrix
+### 8.5 Geographical Scale Comparison Matrix
 
 | Parameter | PAN | LAN | MAN | WAN |
 |---|---|---|---|---|
@@ -188,18 +383,18 @@ Networks are classified based on the physical distance and geographic area they 
 
 ---
 
-## 6. Internet, Intranet & Extranet
+## 9. Internet, Intranet & Extranet
 
 ![The Global Internet](subjects/computer-networks/images/internet-diagram.jpg)
 
-### Internet
+### 9.1 The Global Internet
 The **Internet** is the globally interconnected system of autonomous public and private computer networks utilizing the standardized **TCP/IP protocol suite**.
 - **Access Level:** Public to anyone with an ISP subscription.
 - **Governance:** Decentralized (IETF, ICANN, W3C standards).
 
 ---
 
-### Intranet vs Extranet
+### 9.2 Intranet vs Extranet Architectures
 
 ![Internet vs Intranet](subjects/computer-networks/images/internet-vs-intranet.jpg)
 
@@ -211,7 +406,7 @@ The **Internet** is the globally interconnected system of autonomous public and 
 
 - **Extranet:** A secure, controlled extension of an organization's Intranet enabling **authorized external third parties** (vendors, suppliers, certified partners, enterprise clients) to access specific resources via secure VPNs or authenticated portals.
 
-### Network Scope Comparison
+### 9.3 Network Scope Comparison Matrix
 
 | Metric | Internet | Intranet | Extranet |
 |---|---|---|---|
@@ -221,20 +416,20 @@ The **Internet** is the globally interconnected system of autonomous public and 
 
 ---
 
-## 7. Network Architectures: Client-Server vs Peer-to-Peer (P2P)
+## 10. Network Architectures: Client-Server vs Peer-to-Peer (P2P)
 
 Network architecture determines how compute tasks, storage, and control responsibilities are partitioned among participating nodes.
 
 ![Client-Server vs Peer-to-Peer Architecture](subjects/computer-networks/images/client-server-vs-p2p.jpg)
 
-### Client-Server Architecture
+### 10.1 Client-Server Architecture
 
 - **Server:** High-performance host providing specialized services (HTTP, DNS, Database, Mail).
 - **Client:** End-user device initiating request-response transactions with the server.
 - **Strengths:** Centralized data integrity, simple role-based access control, streamlined backup routines, high horizontal scalability.
 - **Weakness:** Server hardware represents a single point of failure if not load-balanced.
 
-### Peer-to-Peer (P2P) Architecture
+### 10.2 Peer-to-Peer (P2P) Architecture
 
 - **Peers (Servents):** All nodes possess equal privileges and can simultaneously act as both clients and servers.
 - **Strengths:** Extreme fault tolerance, no expensive central infrastructure, bandwidth scales organically with node count.
@@ -243,13 +438,13 @@ Network architecture determines how compute tasks, storage, and control responsi
 
 ---
 
-## 8. Network Hardware & Devices
+## 11. Network Hardware & Devices
 
 Network devices operate at distinct layers of the protocol stack to regenerate signals, filter frames, route packets, or bridge disparate protocols.
 
 ![Network Devices across OSI Layers](subjects/computer-networks/images/network-devices-osi.jpg)
 
-### Hardware Device Directory
+### 11.1 Network Hardware Device Directory
 
 1. **Network Interface Card (NIC):** Physical PCIe card or embedded chip providing hardware layer connection, transceiver capabilities, and a globally unique burnt-in 48-bit **MAC Address** (Layer 1/2).
 2. **Repeater:** Physical layer hardware that amplifies or reshapes weakened electrical/optical signals to extend maximum cable distance (Layer 1).
@@ -263,7 +458,7 @@ Network devices operate at distinct layers of the protocol stack to regenerate s
 
 ---
 
-### Hub vs Switch vs Router Comparison
+### 11.2 Hub vs Switch vs Router Comparison Matrix
 
 ![Hub vs Switch vs Router Comparison](subjects/computer-networks/images/hub-switch-router.jpg)
 
@@ -279,9 +474,9 @@ Network devices operate at distinct layers of the protocol stack to regenerate s
 
 ---
 
-## 9. Network Software Architecture & Encapsulation
+## 12. Network Software Architecture & Encapsulation
 
-### Layered Architecture Philosophy
+### 12.1 Layered Architecture Philosophy
 
 Network software is structured in a vertical hierarchy of abstraction layers. Each layer provides a well-defined set of services to the layer directly above it while abstracting internal implementation details.
 
@@ -293,7 +488,7 @@ Network software is structured in a vertical hierarchy of abstraction layers. Ea
 
 ---
 
-### Data Encapsulation & Decapsulation
+### 12.2 Data Encapsulation & Decapsulation (PDU Stack)
 
 ![Data Encapsulation and Decapsulation in OSI Model](subjects/computer-networks/images/data-encapsulation.png)
 
@@ -310,13 +505,13 @@ Physical Layer     → 01010011 01100101 01101110 01100100   → (Raw Bits)
 
 ---
 
-## 10. Network Topologies
+## 13. Network Topologies
 
 Topology defines the geometric arrangement of nodes and physical/logical transmission links in a network.
 
 ![Network Topologies Overview](subjects/computer-networks/images/network-topologies.jpg)
 
-### Topologies Comparative Breakdown
+### 13.1 Topologies Comparative Breakdown & Fault Impact
 
 | Topology | Geometric Structure | Key Advantages | Key Disadvantages | Cable Fault Impact |
 |---|---|---|---|---|
@@ -329,7 +524,9 @@ Topology defines the geometric arrangement of nodes and physical/logical transmi
 
 ---
 
-## 11. Network Protocol Elements
+## 14. Network Protocol Elements
+
+### 14.1 The Three Pillars of Network Protocols
 
 A network protocol is defined by three fundamental pillars:
 
@@ -351,13 +548,13 @@ A network protocol is defined by three fundamental pillars:
 
 ---
 
-## 12. OSI 7-Layer Reference Model
+## 15. OSI 7-Layer Reference Model
 
 Developed by the **International Organization for Standardization (ISO)**, the Open Systems Interconnection (OSI) model provides an architectural framework dividing network communication into 7 distinct functional layers.
 
 ![OSI 7-Layer Reference Model with Protocols & PDUs](subjects/computer-networks/images/osi-7-layer-model.jpg)
 
-### Detailed Layer Breakdown
+### 15.1 Detailed OSI Layer Breakdown & Mnemonics
 
 ```text
 Layer 7: APPLICATION   ─── Network APIs, Human-Computer Interface (HTTP, DNS, SSH)
@@ -375,7 +572,7 @@ Layer 1: PHYSICAL      ─── Bit Transmission, Signaling & Physical Media (V
 
 ---
 
-### Complete OSI Layer Specification
+### 15.2 Complete OSI 7-Layer Specification Matrix
 
 | Layer # | Layer Name | Protocol Data Unit (PDU) | Primary Addressing | Core Responsibilities | Typical Protocols / Standards |
 |---|---|---|---|---|---|
@@ -389,13 +586,13 @@ Layer 1: PHYSICAL      ─── Bit Transmission, Signaling & Physical Media (V
 
 ---
 
-## 13. TCP/IP Protocol Suite
+## 16. TCP/IP Protocol Suite
 
 The **TCP/IP Model (Internet Protocol Suite)** is the practical, 4-layer architectural standard upon which the global Internet is built.
 
 ![TCP/IP 4-Layer Protocol Suite](subjects/computer-networks/images/tcpip-4-layer-model.jpg)
 
-### The 4 Architectural Layers
+### 16.1 The 4 Architectural TCP/IP Layers
 
 1. **Application Layer (L4):** Combines OSI Layers 5, 6, and 7. Directly supports end-user network applications (HTTP, DNS, SMTP, SSH).
 2. **Transport Layer (L3):** Provides host-to-host process communication over TCP (reliable, connection-oriented) or UDP (fast, connectionless).
@@ -404,7 +601,7 @@ The **TCP/IP Model (Internet Protocol Suite)** is the practical, 4-layer archite
 
 ---
 
-### OSI Model vs TCP/IP Model Mapping & Comparison
+### 16.2 OSI Model vs TCP/IP Protocol Suite Mapping & Comparison
 
 ![OSI Model vs TCP/IP Model Comparison](subjects/computer-networks/images/osi-vs-tcpip.jpg)
 
@@ -427,7 +624,7 @@ OSI 7-Layer Model                    TCP/IP 4-Layer Architecture
 └─────────────────────────┘
 ```
 
-### Comprehensive Comparison Matrix
+### 16.3 Comprehensive Comparison Matrix
 
 | Aspect | OSI Reference Model | TCP/IP Model |
 |---|---|---|
@@ -441,26 +638,29 @@ OSI 7-Layer Model                    TCP/IP 4-Layer Architecture
 
 ---
 
-## 14. Exam Quick-Reference & High-Yield Summary
+## 17. Exam Quick-Reference & High-Yield Summary
 
-### ⚡ Layer vs Identifier vs Protocol Data Unit (PDU)
+### 17.1 Mathematical Formulas Cheat Sheet
 
-| Layer | Protocol Data Unit (PDU) | Addressing Scheme | Hardware Device |
-|---|---|---|---|
-| **Application** | Data / Message | Process ID / Port / URL | Gateway / Application Firewall |
-| **Transport** | **Segment** (TCP) / **Datagram** (UDP) | **Port Number** (`0` – `65535`) | L4 Load Balancer |
-| **Network** | **Packet** | **IP Address** (e.g. `192.168.1.1`) | **Router** / Layer 3 Switch |
-| **Data Link** | **Frame** | **MAC Address** (`00:1A:2B:3C:4D:5E`) | **Switch** / Bridge / NIC |
-| **Physical** | **Bits** (Electrical / Optical pulses) | Physical Pins / Frequencies | **Hub** / Repeater / Media Converter |
+| Formula Name | Equation | Variables Meaning |
+|---|---|---|
+| **Transmission Delay** | $\mathbf{d_{\text{trans}} = \frac{L}{R}}$ | $L = \text{packet size (bits)}$, $R = \text{bandwidth (bps)}$ |
+| **Propagation Delay** | $\mathbf{d_{\text{prop}} = \frac{d}{s}}$ | $d = \text{distance (meters)}$, $s = \text{speed } (\approx 2 \times 10^8\text{ m/s})$ |
+| **Total Nodal Delay** | $\mathbf{d_{\text{nodal}} = d_{\text{proc}} + d_{\text{queue}} + d_{\text{trans}} + d_{\text{prop}}}$ | Sum of 4 additive delay components |
+| **Traffic Intensity** | $\mathbf{I = \frac{La}{R}}$ | $a = \text{arrival rate (pkts/sec)}$, $I > 1 \implies \text{Packet Loss}$ |
+| **Bandwidth-Delay Product** | $\mathbf{\text{BDP} = R \times \text{RTT}}$ | Maximum unacknowledged in-flight bits |
+| **Mesh Links Count** | $\mathbf{\text{Links} = \frac{n(n-1)}{2}}$ | $n = \text{number of participating nodes}$ |
 
 ---
 
-### Core Distinctions to Ace in Exams
+### 17.2 Core High-Yield Exam Distinctions
 
-> **1. Encapsulation vs Decapsulation:** Encapsulation appends headers moving **down** the stack ($7 \to 1$); Decapsulation parses and strips headers moving **up** the stack ($1 \to 7$).
+> **1. Bandwidth vs Throughput vs Goodput:** Bandwidth is theoretical link ceiling; Throughput is actual measured bit rate including headers; Goodput is useful payload rate only ($\text{Goodput} \le \text{Throughput} \le \text{Bandwidth}$).
 >
-> **2. Service vs Protocol:** A *Service* is what a layer provides to the layer above it; a *Protocol* is the formal rules used by peer entities across the network.
+> **2. Transmission Delay vs Propagation Delay:** Transmission delay is the time to push bits onto the wire ($L/R$, halved if bandwidth doubles); Propagation delay is the time for a bit to travel the distance ($d/s$, unaffected by bandwidth).
 >
-> **3. Hub vs Switch vs Router:** Hub broadcasts raw bits at Layer 1; Switch unicasts frames using Layer 2 MAC addresses; Router forwards packets between subnets using Layer 3 IP addresses.
+> **3. Ping vs Traceroute:** Ping tests end-to-end reachability and RTT using ICMP Echo Request/Reply; Traceroute discovers the entire route path using incremental TTL expiry probes.
 >
-> **4. Simplex vs Half-Duplex vs Full-Duplex:** Simplex is 1-way; Half-Duplex is 2-way alternating; Full-Duplex is 2-way simultaneous.
+> **4. Hub vs Switch vs Router:** Hub broadcasts raw electrical bits at Layer 1; Switch unicasts frames using Layer 2 MAC addresses; Router forwards packets between subnets using Layer 3 IP addresses.
+>
+> **5. Encapsulation vs Decapsulation:** Encapsulation appends headers moving **down** the stack ($7 \to 1$); Decapsulation parses and strips headers moving **up** the stack ($1 \to 7$).

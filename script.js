@@ -1,6 +1,6 @@
 /* ============================================================
    BTech Notes — Main Application Script
-   Editorial SPA router, Markdown processor, ScrollSpy, Search.
+   Editorial SPA router, HTML & Markdown processors, ScrollSpy, Search.
    ============================================================ */
 
 (function () {
@@ -40,6 +40,7 @@
   async function init() {
     setupTheme();
     setupSidebar();
+    setupHeaderAutoHide();
     setupSearch();
     setupImageModal();
     setupReadingProgressBar();
@@ -68,7 +69,12 @@
 
   function handleRoute() {
     const hash = location.hash || '#/';
-    const path = hash.slice(2); // remove '#/'
+    const hashClean = hash.startsWith('#') ? hash.slice(1) : hash;
+    const hashParts = hashClean.split('#');
+    const pathPart = hashParts[0] || '/';
+    const targetAnchor = hashParts[1] || null;
+
+    const path = pathPart.startsWith('/') ? pathPart.slice(1) : pathPart;
     const parts = path.split('/').filter(Boolean);
 
     // Close mobile sidebar on navigation
@@ -79,13 +85,14 @@
     } else if (parts[0] === 'subject' && parts.length === 2) {
       renderSubject(parts[1]);
     } else if (parts[0] === 'subject' && parts.length === 3) {
-      renderUnit(parts[1], parts[2]);
+      renderUnit(parts[1], parts[2], targetAnchor);
     } else {
       renderHome();
     }
 
-    // Scroll to top
-    window.scrollTo(0, 0);
+    if (!targetAnchor) {
+      window.scrollTo(0, 0);
+    }
   }
 
   // ─── Render: Home (Subject Cards Grid) ─────────────────────
@@ -160,8 +167,8 @@
       <ul class="unit-list">${unitsHTML}</ul>`;
   }
 
-  // ─── Render: Unit (Editorial Markdown Document) ────────────
-  async function renderUnit(subjectId, unitId) {
+  // ─── Render: Unit (Editorial HTML or Markdown Document) ─────
+  async function renderUnit(subjectId, unitId, targetAnchor) {
     const subject = subjectsData.subjects.find(s => s.id === subjectId);
     if (!subject) { renderNotFound('Subject not found.'); return; }
 
@@ -188,15 +195,23 @@
         <div style="padding:2rem 0;color:var(--text-tertiary);font-size:0.875rem;">Loading notes…</div>
       </div>`;
 
-    // Fetch markdown
-    const mdUrl = `subjects/${subjectId}/${unitId}.md`;
-    let mdContent = '';
+    let docData = null;
+    let rawText = '';
     try {
-      const res = await fetch(mdUrl);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      mdContent = await res.text();
+      // 1. Check for .html notes first (clean semantic HTML)
+      const htmlRes = await fetch(`subjects/${subjectId}/${unitId}.html`);
+      if (htmlRes.ok) {
+        rawText = await htmlRes.text();
+        docData = processHTMLDocument(rawText);
+      } else {
+        // 2. Fallback to .md notes
+        const mdRes = await fetch(`subjects/${subjectId}/${unitId}.md`);
+        if (!mdRes.ok) throw new Error(`HTTP ${mdRes.status}`);
+        rawText = await mdRes.text();
+        docData = processMarkdownDocument(rawText);
+      }
     } catch (e) {
-      console.error('Error loading markdown:', e);
+      console.error('Error loading notes:', e);
       hideLoading();
       contentEl.innerHTML = `
         <nav class="breadcrumbs" aria-label="Breadcrumb">
@@ -211,18 +226,17 @@
           <h1 class="unit-title">${esc(unit.title)}</h1>
           <div style="padding:2rem 0;color:var(--text-tertiary);">
             <p>Notes file not found.</p>
-            <p style="font-size:0.8125rem;margin-top:0.5rem;">Expected: <code>${esc(mdUrl)}</code></p>
+            <p style="font-size:0.8125rem;margin-top:0.5rem;">Expected: <code>subjects/${esc(subjectId)}/${esc(unitId)}.html</code> or <code>.md</code></p>
           </div>
         </div>`;
       return;
     }
 
-    // Reading time calculation (~200 wpm)
-    const wordCount = mdContent.trim().split(/\s+/).length;
-    const readTimeMinutes = Math.max(1, Math.ceil(wordCount / 200));
+    const { docHTML, tocItems, leadDescription } = docData;
 
-    // Parse markdown into editorial structure
-    const { docHTML, tocItems, leadDescription } = processMarkdownDocument(mdContent);
+    // Reading time calculation (~200 wpm)
+    const wordCount = rawText.replace(/<[^>]*>/g, ' ').trim().split(/\s+/).length;
+    const readTimeMinutes = Math.max(1, Math.ceil(wordCount / 200));
 
     // Build prev/next navigation
     const prevUnit = unitIndex > 0 ? subject.units[unitIndex - 1] : null;
@@ -306,6 +320,63 @@
 
     // Build right-hand TOC & activate ScrollSpy
     buildTOC(tocItems);
+
+    // Deep link scroll if target anchor provided
+    if (targetAnchor) {
+      setTimeout(() => {
+        const targetEl = document.getElementById(targetAnchor);
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
+  }
+
+  // ─── Process HTML Document ─────────────────────────────────
+  function processHTMLDocument(htmlText) {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlText;
+
+    let leadDescription = '';
+    const leadEl = tempDiv.querySelector('.unit-lead');
+    if (leadEl) {
+      leadDescription = leadEl.innerHTML;
+      leadEl.remove();
+    }
+
+    const h1El = tempDiv.querySelector('h1');
+    if (h1El) {
+      h1El.remove();
+    }
+
+    const tocItems = [];
+    const headings = tempDiv.querySelectorAll('h2, h3');
+    headings.forEach((h, idx) => {
+      const titleText = h.textContent.replace(/#+$/, '').trim();
+      const slug = h.id || slugify(titleText) || `section-${idx + 1}`;
+      h.id = slug;
+
+      if (!h.querySelector('.heading-anchor')) {
+        const anchor = document.createElement('a');
+        anchor.href = `#${slug}`;
+        anchor.className = 'heading-anchor';
+        anchor.setAttribute('aria-label', `Permalink to ${titleText}`);
+        anchor.innerHTML = '#';
+        h.appendChild(anchor);
+      }
+
+      tocItems.push({
+        id: slug,
+        title: titleText,
+        level: h.tagName.toLowerCase()
+      });
+    });
+
+    return {
+      docHTML: tempDiv.innerHTML,
+      tocItems,
+      leadDescription
+    };
   }
 
   // ─── Process Markdown into Flowing Editorial Document ─────
@@ -318,12 +389,11 @@
     const tocItems = [];
     let headingCount = 0;
 
-    // Process nodes
     const childNodes = Array.from(tempDiv.childNodes);
     let foundFirstHeading = false;
 
     childNodes.forEach((node) => {
-      // Skip top-level H1 (handled in header card)
+      // Skip top-level H1
       if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'H1') {
         node.remove();
         return;
@@ -347,7 +417,6 @@
         const slug = slugify(titleText) || `section-${headingCount}`;
         node.id = slug;
 
-        // Add permalink anchor
         const anchor = document.createElement('a');
         anchor.href = `#${slug}`;
         anchor.className = 'heading-anchor';
@@ -378,17 +447,32 @@
       .replace(/^-+|-+$/g, '');
   }
 
+  // ─── Header Auto-Hide on Scroll ────────────────────────────
+  function setupHeaderAutoHide() {
+    let lastScrollY = window.scrollY;
+    const headerEl = $('#header');
+    if (!headerEl) return;
+
+    window.addEventListener('scroll', () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY && currentScrollY > 70) {
+        headerEl.classList.add('header-hidden');
+      } else if (currentScrollY < lastScrollY || currentScrollY <= 20) {
+        headerEl.classList.remove('header-hidden');
+      }
+      lastScrollY = currentScrollY;
+    }, { passive: true });
+  }
+
   // ─── Code Block Copy Buttons ───────────────────────────────
   function setupCodeCopyButtons() {
     const pres = $$('.doc-body pre');
     pres.forEach(pre => {
-      // Avoid double wrapping
       if (pre.parentElement.classList.contains('code-block-wrapper')) return;
 
       const wrapper = document.createElement('div');
       wrapper.className = 'code-block-wrapper';
 
-      // Detect language from class (e.g. class="language-bash")
       const codeEl = pre.querySelector('code');
       let lang = 'CODE';
       if (codeEl) {
@@ -468,7 +552,6 @@
       });
     });
 
-    // Activate live ScrollSpy
     setupScrollSpy();
   }
 
@@ -556,9 +639,16 @@
 
   function setupSidebar() {
     sidebarToggle.addEventListener('click', () => {
-      const isOpen = sidebarEl.classList.contains('open');
-      if (isOpen) closeSidebar();
-      else openSidebar();
+      if (window.innerWidth <= 768) {
+        const isOpen = sidebarEl.classList.contains('open');
+        if (isOpen) closeSidebar();
+        else openSidebar();
+      } else {
+        const layoutEl = $('.layout');
+        if (layoutEl) {
+          layoutEl.classList.toggle('sidebar-collapsed');
+        }
+      }
     });
 
     sidebarOverlay.addEventListener('click', closeSidebar);
@@ -599,10 +689,10 @@
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         performSearch(searchInput.value.trim());
-      }, 150);
+      }, 120);
     });
 
-    // Arrow navigation in search results
+    // Keyboard navigation in search results
     searchInput.addEventListener('keydown', (e) => {
       const items = $$('.search-result-item');
       const selected = $('.search-result-item.selected');
@@ -659,43 +749,96 @@
     for (const subject of subjectsData.subjects) {
       for (const unit of subject.units) {
         try {
-          const res = await fetch(`subjects/${subject.id}/${unit.id}.md`);
-          if (!res.ok) continue;
-          const text = await res.text();
+          let isHtml = false;
+          let contentText = '';
+          const htmlRes = await fetch(`subjects/${subject.id}/${unit.id}.html`);
+          if (htmlRes.ok) {
+            contentText = await htmlRes.text();
+            isHtml = true;
+          } else {
+            const mdRes = await fetch(`subjects/${subject.id}/${unit.id}.md`);
+            if (mdRes.ok) {
+              contentText = await mdRes.text();
+            } else {
+              continue;
+            }
+          }
 
-          // Index by sections
-          const lines = text.split('\n');
-          let currentSection = unit.title;
-          let currentContent = '';
-
-          for (const line of lines) {
-            if (line.startsWith('## ') || line.startsWith('### ')) {
-              if (currentContent.trim()) {
+          if (isHtml) {
+            const temp = document.createElement('div');
+            temp.innerHTML = contentText;
+            const headings = temp.querySelectorAll('h2, h3');
+            if (headings.length > 0) {
+              headings.forEach(h => {
+                const hTitle = h.textContent.replace(/#+$/, '').trim();
+                const hId = h.id || slugify(hTitle);
+                let next = h.nextElementSibling;
+                let secText = '';
+                while (next && !['H2', 'H3'].includes(next.tagName)) {
+                  secText += ' ' + next.textContent;
+                  next = next.nextElementSibling;
+                }
                 searchIndex.push({
                   subjectId: subject.id,
                   subjectName: subject.name,
                   unitId: unit.id,
                   unitTitle: unit.title,
-                  section: currentSection,
-                  content: currentContent.trim()
+                  section: hTitle,
+                  sectionId: hId,
+                  content: secText.trim()
                 });
-              }
-              currentSection = line.replace(/^#+\s*/, '');
-              currentContent = '';
+              });
             } else {
-              currentContent += ' ' + line;
+              searchIndex.push({
+                subjectId: subject.id,
+                subjectName: subject.name,
+                unitId: unit.id,
+                unitTitle: unit.title,
+                section: unit.title,
+                sectionId: slugify(unit.title),
+                content: temp.textContent.trim()
+              });
             }
-          }
+          } else {
+            // Markdown parsing
+            const lines = contentText.split('\n');
+            let currentSection = unit.title;
+            let currentSectionId = slugify(unit.title);
+            let currentContent = '';
 
-          if (currentContent.trim()) {
-            searchIndex.push({
-              subjectId: subject.id,
-              subjectName: subject.name,
-              unitId: unit.id,
-              unitTitle: unit.title,
-              section: currentSection,
-              content: currentContent.trim()
-            });
+            for (const line of lines) {
+              if (line.startsWith('## ') || line.startsWith('### ')) {
+                if (currentContent.trim()) {
+                  searchIndex.push({
+                    subjectId: subject.id,
+                    subjectName: subject.name,
+                    unitId: unit.id,
+                    unitTitle: unit.title,
+                    section: currentSection,
+                    sectionId: currentSectionId,
+                    content: currentContent.trim()
+                  });
+                }
+                const rawTitle = line.replace(/^#+\s*/, '').trim();
+                currentSection = rawTitle;
+                currentSectionId = slugify(rawTitle);
+                currentContent = '';
+              } else {
+                currentContent += ' ' + line;
+              }
+            }
+
+            if (currentContent.trim()) {
+              searchIndex.push({
+                subjectId: subject.id,
+                subjectName: subject.name,
+                unitId: unit.id,
+                unitTitle: unit.title,
+                section: currentSection,
+                sectionId: currentSectionId,
+                content: currentContent.trim()
+              });
+            }
           }
         } catch (e) {
           // ignore indexing errors for single file
@@ -753,8 +896,9 @@
       const e = m.entry;
       const snippet = extractSnippet(e.content, terms);
       const selectedClass = idx === 0 ? ' selected' : '';
+      const targetUrl = `#/subject/${e.subjectId}/${e.unitId}#${e.sectionId}`;
       html += `
-        <a href="#/subject/${e.subjectId}/${e.unitId}" class="search-result-item${selectedClass}" onclick="window.__closeSearch()">
+        <a href="${targetUrl}" class="search-result-item${selectedClass}" data-section="${e.sectionId}" onclick="window.__navigateToSearchResult(event, '${e.subjectId}', '${e.unitId}', '${e.sectionId}')">
           <div class="search-result-title">${highlightTerms(esc(e.section), terms)}</div>
           <div class="search-result-path">${esc(e.subjectName)} › ${esc(e.unitTitle)}</div>
           <div class="search-result-snippet">${highlightTerms(snippet, terms)}</div>
@@ -763,6 +907,25 @@
 
     searchResults.innerHTML = html;
   }
+
+  window.__navigateToSearchResult = function (event, subjectId, unitId, sectionId) {
+    if (event) event.preventDefault();
+    closeSearch();
+    const currentHash = location.hash || '';
+    const targetBase = `#/subject/${subjectId}/${unitId}`;
+
+    if (currentHash.startsWith(targetBase)) {
+      // Already on this unit page, smoothly scroll directly to section element
+      const targetEl = document.getElementById(sectionId);
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        history.replaceState(null, '', `${targetBase}#${sectionId}`);
+      }
+    } else {
+      // Route to target unit with section anchor
+      location.hash = `${targetBase}#${sectionId}`;
+    }
+  };
 
   window.__closeSearch = closeSearch;
 

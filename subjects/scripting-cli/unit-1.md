@@ -30,7 +30,7 @@ A compact, practical reference for core command-line interface fundamentals acro
 
 ## 3. Redirection Operators
 
-### Linux / macOS (Bash / Zsh) & Windows CMD / PowerShell
+### 3.1 Redirection Operators by Shell (Linux / macOS / Windows)
 
 | Operator | Purpose | Linux / macOS Example | Windows CMD Example | PowerShell Example |
 |---|---|---|---|---|
@@ -43,7 +43,7 @@ A compact, practical reference for core command-line interface fundamentals acro
 | `&>` | Redirect stdout & stderr | `cmd &> all.log` | `cmd > all.log 2>&1` | `cmd *> all.log` |
 | Discard Output | Black hole / Null sink | `cmd > /dev/null 2>&1` | `cmd > NUL 2>&1` | `cmd \| Out-Null` |
 
-### Important options & patterns
+### 3.2 Important Options & Redirection Patterns
 
 ```text
 2> /dev/null   → silence all error output on Linux/macOS
@@ -75,7 +75,7 @@ A compact, practical reference for core command-line interface fundamentals acro
 | `;` | Sequential | `mkdir d ; cd d` | Runs sequentially regardless of success or failure |
 | `&` | Background (POSIX) | `python -m http.server &` | Runs command asynchronously in background subshell |
 
-### Inspecting Exit Status Codes
+### 5.1 Inspecting Exit Status Codes
 
 | Shell | Syntax | Success Value | Error Value |
 |---|---|---|---|
@@ -93,7 +93,7 @@ command  -a  -b 20  --flag  --option=value  arg1  arg2
 Command  Short flags    Long options      Positional arguments
 ```
 
-### Argument Syntax Reference
+### 6.1 Argument Syntax Reference
 
 | Component | Linux / macOS (POSIX / GNU) | Windows CMD | PowerShell |
 |---|---|---|---|

@@ -29,6 +29,16 @@
   --table-header-bg: #f8fafc;
   --table-stripe-bg: #fafafa;
   --table-border: #e2e8f0;
+
+  /* Heading Hierarchy Colors — Light Theme */
+  --heading-h1: #0f172a;
+  --heading-h2: #0f172a;
+  --heading-h2-border: #2563eb;
+  --heading-h2-bg: rgba(37, 99, 235, 0.04);
+  --heading-h3: #1d4ed8;
+  --heading-h4: #475569;
+  --heading-h5: #64748b;
+
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
   --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.07), 0 1px 2px -1px rgba(0, 0, 0, 0.07);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
@@ -80,6 +90,16 @@
   --table-header-bg: #121215;
   --table-stripe-bg: #0c0c0e;
   --table-border: #27272a;
+
+  /* Heading Hierarchy Colors — Dark Mode */
+  --heading-h1: #f8fafc;
+  --heading-h2: #f4f4f5;
+  --heading-h2-border: #3b82f6;
+  --heading-h2-bg: rgba(59, 130, 246, 0.08);
+  --heading-h3: #60a5fa;
+  --heading-h4: #cbd5e1;
+  --heading-h5: #94a3b8;
+
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
   --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
@@ -223,6 +243,11 @@ img {
   z-index: 100;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  transition: transform 280ms cubic-bezier(0.4, 0, 0.2, 1), background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.header.header-hidden {
+  transform: translateY(-100%);
 }
 
 [data-theme="dark"] .header {
@@ -262,7 +287,7 @@ img {
 }
 
 .sidebar-toggle {
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: center;
   width: 32px;
@@ -390,7 +415,7 @@ img {
   overflow-x: hidden;
   z-index: 50;
   padding: 1rem 0.5rem 2rem 0.5rem;
-  transition: transform var(--transition-slow);
+  transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar-section-label {
@@ -492,6 +517,16 @@ img {
   padding: 2rem 2.5rem 5rem 2.5rem;
   display: flex;
   justify-content: center;
+  transition: margin-left 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Desktop Collapsed Sidebar */
+.layout.sidebar-collapsed .sidebar {
+  transform: translateX(-100%);
+}
+
+.layout.sidebar-collapsed .main {
+  margin-left: 0;
 }
 
 .content {
@@ -637,28 +672,38 @@ img {
   scroll-margin-top: calc(var(--header-height) + 1.5rem);
 }
 
-/* Headings */
+/* ===== Headings Hierarchy ===== */
+
+/* Master Section Headings (H2) */
 .doc-body h2 {
   font-size: 1.375rem;
   font-weight: 700;
-  letter-spacing: -0.015em;
-  color: var(--text-primary);
-  margin-top: 2rem;
-  margin-bottom: 0.85rem;
-  padding-bottom: 0.4rem;
+  letter-spacing: -0.02em;
+  color: var(--heading-h2);
+  margin-top: 2.75rem;
+  margin-bottom: 1.15rem;
+  padding: 0.65rem 0.85rem;
+  border-left: 4px solid var(--heading-h2-border);
+  background: var(--heading-h2-bg);
   border-bottom: 1px solid var(--border-light);
+  border-radius: 0 6px 6px 0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   scroll-margin-top: calc(var(--header-height) + 1.5rem);
 }
 
+.doc-body h2:first-of-type {
+  margin-top: 1rem;
+}
+
 .doc-body h2 .heading-anchor {
   opacity: 0;
   color: var(--text-tertiary);
   font-weight: 400;
-  font-size: 0.9em;
-  transition: opacity var(--transition-fast);
+  font-size: 0.85em;
+  margin-left: auto;
+  transition: opacity var(--transition-fast), color var(--transition-fast);
   text-decoration: none;
 }
 
@@ -670,22 +715,69 @@ img {
   color: var(--accent);
 }
 
+/* Sub-Topic Headings (H3) — Distinctive Radiant Accent Color */
 .doc-body h3 {
-  font-size: 1.125rem;
+  font-size: 1.1rem;
   font-weight: 600;
   letter-spacing: -0.01em;
-  color: var(--text-primary);
-  margin-top: 1.5rem;
-  margin-bottom: 0.6rem;
+  color: var(--heading-h3);
+  margin-top: 1.85rem;
+  margin-bottom: 0.65rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
   scroll-margin-top: calc(var(--header-height) + 1.5rem);
 }
 
+.doc-body h3::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--heading-h3);
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.doc-body h3 .heading-anchor {
+  opacity: 0;
+  color: var(--text-tertiary);
+  font-weight: 400;
+  font-size: 0.85em;
+  margin-left: auto;
+  transition: opacity var(--transition-fast), color var(--transition-fast);
+  text-decoration: none;
+}
+
+.doc-body h3:hover .heading-anchor {
+  opacity: 1;
+}
+
+.doc-body h3 .heading-anchor:hover {
+  color: var(--accent);
+}
+
+/* Sub-Sub Topic Headings (H4) — Muted Slate / Category Tag */
 .doc-body h4 {
   font-size: 0.9375rem;
   font-weight: 600;
-  color: var(--text-primary);
-  margin-top: 1.25rem;
+  color: var(--heading-h4);
+  margin-top: 1.35rem;
   margin-bottom: 0.5rem;
+  letter-spacing: -0.005em;
+}
+
+/* Minor Headings (H5, H6) */
+.doc-body h5,
+.doc-body h6 {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--heading-h5);
+  margin-top: 1.15rem;
+  margin-bottom: 0.4rem;
 }
 
 .doc-body p {
@@ -848,7 +940,8 @@ img {
 }
 
 /* Callouts / Blockquotes (Notion Style) */
-.doc-body blockquote {
+.doc-body blockquote,
+.callout {
   margin: 1.15rem 0;
   padding: 0.85rem 1.15rem;
   border-left: 3px solid var(--accent);
@@ -859,21 +952,52 @@ img {
   line-height: 1.65;
 }
 
-.doc-body blockquote strong {
+.doc-body blockquote strong,
+.callout strong {
   color: var(--accent);
   font-weight: 600;
 }
 
-[data-theme="dark"] .doc-body blockquote strong {
+[data-theme="dark"] .doc-body blockquote strong,
+[data-theme="dark"] .callout strong {
   color: #93c5fd;
 }
 
-.doc-body blockquote p {
+.doc-body blockquote p,
+.callout p {
   margin-bottom: 0.5rem;
 }
 
-.doc-body blockquote p:last-child {
+.doc-body blockquote p:last-child,
+.callout p:last-child {
   margin-bottom: 0;
+}
+
+/* Math Cards & Mathematical Formulas */
+.math-card {
+  margin: 1.15rem 0;
+  padding: 0.85rem 1.15rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+}
+
+.math-title {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+  margin-bottom: 0.35rem;
+}
+
+.math-formula {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.6;
 }
 
 /* Horizontal Dividers */
