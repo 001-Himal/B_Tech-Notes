@@ -1,6 +1,6 @@
 /* ============================================================
    BTech Notes — Main Application Script
-   Hash-based SPA router, Markdown rendering, search, themes.
+   Editorial SPA router, Markdown processor, ScrollSpy, Search.
    ============================================================ */
 
 (function () {
@@ -10,7 +10,7 @@
   let subjectsData = null;
   let searchIndex = null;
   let searchIndexBuilding = false;
-  let allExpanded = false;
+  let scrollSpyObserver = null;
 
   // ─── DOM Refs ──────────────────────────────────────────────
   const $ = (sel) => document.querySelector(sel);
@@ -29,12 +29,20 @@
   const outlineEl = $('#outline');
   const outlineList = $('#outline-list');
   const loadingBar = $('#loading-bar');
+  const progressBar = $('#reading-progress-bar');
+  const imageModal = $('#image-modal');
+  const imageModalImg = $('#image-modal-img');
+  const imageModalCaption = $('#image-modal-caption');
+  const imageModalClose = $('#image-modal-close');
+  const imageModalBackdrop = $('#image-modal-backdrop');
 
   // ─── Initialize ────────────────────────────────────────────
   async function init() {
     setupTheme();
     setupSidebar();
     setupSearch();
+    setupImageModal();
+    setupReadingProgressBar();
     setupPrintHooks();
     await loadSubjects();
     setupRouter();
@@ -80,9 +88,9 @@
     window.scrollTo(0, 0);
   }
 
-  // ─── Render: Home (Subject Listing) ────────────────────────
+  // ─── Render: Home (Subject Cards Grid) ─────────────────────
   function renderHome() {
-    document.title = 'BTech Notes';
+    document.title = 'BTech Notes — Comprehensive University Studies';
     updateSidebar(null, null);
     hideOutline();
 
@@ -93,15 +101,21 @@
       const unitLabel = unitCount === 1 ? '1 unit' : `${unitCount} units`;
       cardsHTML += `
         <a href="#/subject/${s.id}" class="subject-card" id="card-${s.id}">
+          <div class="subject-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+          </div>
           <div class="subject-card-name">${esc(s.name)}</div>
-          <div class="subject-card-meta">${unitLabel}</div>
+          <div class="subject-card-meta">${unitLabel} · Full notes & cheat sheets</div>
         </a>`;
     }
 
     contentEl.innerHTML = `
       <div class="home-header">
-        <h1>All Subjects</h1>
-        <p>Select a subject to view its units and notes.</p>
+        <h1>BTech Study Notes</h1>
+        <p>Curated, high-yield university lecture notes, architectures, and cheat sheets.</p>
       </div>
       <div class="subject-grid">${cardsHTML}</div>`;
   }
@@ -119,17 +133,20 @@
     hideOutline();
 
     let unitsHTML = '';
-    for (const u of subject.units) {
+    subject.units.forEach((u, idx) => {
       unitsHTML += `
         <li class="unit-list-item">
           <a href="#/subject/${subject.id}/${u.id}" class="unit-list-link" id="unit-link-${u.id}">
-            <span class="unit-list-title">${esc(u.title)}</span>
+            <div>
+              <span style="font-size:0.75rem;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:0.15rem;">Part ${idx + 1}</span>
+              <span class="unit-list-title">${esc(u.title)}</span>
+            </div>
             <svg class="unit-list-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
           </a>
         </li>`;
-    }
+    });
 
     contentEl.innerHTML = `
       <nav class="breadcrumbs" aria-label="Breadcrumb">
@@ -143,7 +160,7 @@
       <ul class="unit-list">${unitsHTML}</ul>`;
   }
 
-  // ─── Render: Unit (Markdown Content) ───────────────────────
+  // ─── Render: Unit (Editorial Markdown Document) ────────────
   async function renderUnit(subjectId, unitId) {
     const subject = subjectsData.subjects.find(s => s.id === subjectId);
     if (!subject) { renderNotFound('Subject not found.'); return; }
@@ -165,9 +182,11 @@
         <span class="breadcrumbs-separator">›</span>
         <span class="breadcrumbs-current">${esc(unit.title)}</span>
       </nav>
-      <div class="unit-subject-label">${esc(subject.name)}</div>
-      <h1 class="unit-title">${esc(unit.title)}</h1>
-      <div style="padding:2rem 0;color:var(--text-tertiary);font-size:0.875rem;">Loading notes…</div>`;
+      <div class="unit-header-card">
+        <div class="unit-subject-tag">${esc(subject.name)}</div>
+        <h1 class="unit-title">${esc(unit.title)}</h1>
+        <div style="padding:2rem 0;color:var(--text-tertiary);font-size:0.875rem;">Loading notes…</div>
+      </div>`;
 
     // Fetch markdown
     const mdUrl = `subjects/${subjectId}/${unitId}.md`;
@@ -187,20 +206,23 @@
           <span class="breadcrumbs-separator">›</span>
           <span class="breadcrumbs-current">${esc(unit.title)}</span>
         </nav>
-        <div class="unit-subject-label">${esc(subject.name)}</div>
-        <h1 class="unit-title">${esc(unit.title)}</h1>
-        <div style="padding:2rem 0;color:var(--text-tertiary);">
-          <p>Notes file not found.</p>
-          <p style="font-size:0.8125rem;margin-top:0.5rem;">Expected: <code>${esc(mdUrl)}</code></p>
+        <div class="unit-header-card">
+          <div class="unit-subject-tag">${esc(subject.name)}</div>
+          <h1 class="unit-title">${esc(unit.title)}</h1>
+          <div style="padding:2rem 0;color:var(--text-tertiary);">
+            <p>Notes file not found.</p>
+            <p style="font-size:0.8125rem;margin-top:0.5rem;">Expected: <code>${esc(mdUrl)}</code></p>
+          </div>
         </div>`;
       return;
     }
 
-    // Parse markdown
-    const htmlContent = marked.parse(mdContent);
+    // Reading time calculation (~200 wpm)
+    const wordCount = mdContent.trim().split(/\s+/).length;
+    const readTimeMinutes = Math.max(1, Math.ceil(wordCount / 200));
 
-    // Split into header + topics
-    const { headerHTML, topicsHTML, topicTitles } = splitIntoTopics(htmlContent);
+    // Parse markdown into editorial structure
+    const { docHTML, tocItems, leadDescription } = processMarkdownDocument(mdContent);
 
     // Build prev/next navigation
     const prevUnit = unitIndex > 0 ? subject.units[unitIndex - 1] : null;
@@ -210,20 +232,20 @@
     if (prevUnit) {
       navHTML += `
         <a href="#/subject/${subjectId}/${prevUnit.id}" class="unit-nav-link prev">
-          <span class="unit-nav-label">← Previous</span>
+          <span class="unit-nav-label">← Previous Unit</span>
           <span class="unit-nav-title">${esc(prevUnit.title)}</span>
         </a>`;
     }
     if (nextUnit) {
       navHTML += `
         <a href="#/subject/${subjectId}/${nextUnit.id}" class="unit-nav-link next">
-          <span class="unit-nav-label">Next →</span>
+          <span class="unit-nav-label">Next Unit →</span>
           <span class="unit-nav-title">${esc(nextUnit.title)}</span>
         </a>`;
     }
     navHTML += '</nav>';
 
-    // Render
+    // Render Editorial Page Layout
     contentEl.innerHTML = `
       <nav class="breadcrumbs" aria-label="Breadcrumb">
         <a href="#/">Home</a>
@@ -232,165 +254,295 @@
         <span class="breadcrumbs-separator">›</span>
         <span class="breadcrumbs-current">${esc(unit.title)}</span>
       </nav>
-      <div class="unit-subject-label">${esc(subject.name)}</div>
-      <h1 class="unit-title">${esc(unit.title)}</h1>
-      ${headerHTML ? `<div class="unit-description">${headerHTML}</div>` : ''}
-      <div class="unit-actions">
-        <button class="btn btn-expand-all" id="btn-expand-all" onclick="window.__toggleAllTopics()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="7 13 12 18 17 13"></polyline>
-            <polyline points="7 6 12 11 17 6"></polyline>
+      <header class="unit-header-card">
+        <div class="unit-subject-tag">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
           </svg>
-          <span>Expand all</span>
-        </button>
-        <button class="btn btn-print" id="btn-print" onclick="window.__printUnit()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="6 9 6 2 18 2 18 9"></polyline>
-            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-            <rect x="6" y="14" width="12" height="8"></rect>
-          </svg>
-          <span>Print</span>
-        </button>
-      </div>
-      <div class="topics-container" id="topics-container">${topicsHTML}</div>
+          ${esc(subject.name)}
+        </div>
+        <h1 class="unit-title">${esc(unit.title)}</h1>
+        ${leadDescription ? `<p class="unit-lead">${leadDescription}</p>` : ''}
+        <div class="unit-meta-bar">
+          <div class="unit-meta-left">
+            <span class="unit-meta-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              ${readTimeMinutes} min read
+            </span>
+            <span class="unit-meta-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
+              Unit ${unitIndex + 1} of ${subject.units.length}
+            </span>
+          </div>
+          <div class="unit-meta-right">
+            <button class="btn-action" onclick="window.__printUnit()" title="Print or save as PDF">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+              </svg>
+              Print Notes
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <article class="doc-body" id="doc-body">
+        ${docHTML}
+      </article>
+
       ${navHTML}`;
 
     hideLoading();
 
-    // Build outline
-    buildOutline(topicTitles);
+    // Attach copy buttons to code blocks
+    setupCodeCopyButtons();
 
-    // Reset expand state
-    allExpanded = false;
+    // Build right-hand TOC & activate ScrollSpy
+    buildTOC(tocItems);
   }
 
-  // ─── Topic Splitting ──────────────────────────────────────
-  function splitIntoTopics(html) {
-    const container = document.createElement('div');
-    container.innerHTML = html;
+  // ─── Process Markdown into Flowing Editorial Document ─────
+  function processMarkdownDocument(mdText) {
+    const rawHTML = marked.parse(mdText);
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = rawHTML;
 
-    let headerHTML = '';
-    let topicsHTML = '';
-    const topicTitles = [];
-    let currentTopicTitle = '';
-    let currentTopicContent = '';
-    let topicIndex = 0;
-    let foundFirstH2 = false;
+    let leadDescription = '';
+    const tocItems = [];
+    let headingCount = 0;
 
-    for (const node of Array.from(container.childNodes)) {
-      const isH1 = node.nodeType === Node.ELEMENT_NODE && node.tagName === 'H1';
-      const isH2 = node.nodeType === Node.ELEMENT_NODE && node.tagName === 'H2';
+    // Process nodes
+    const childNodes = Array.from(tempDiv.childNodes);
+    let foundFirstHeading = false;
 
-      if (isH1) {
-        // Skip h1 — we render the title from subjects.json
-        continue;
+    childNodes.forEach((node) => {
+      // Skip top-level H1 (handled in header card)
+      if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'H1') {
+        node.remove();
+        return;
       }
 
-      if (isH2) {
-        // Save previous topic if exists
-        if (foundFirstH2 && currentTopicTitle) {
-          topicsHTML += buildTopicHTML(currentTopicTitle, currentTopicContent, topicIndex);
-          topicTitles.push(currentTopicTitle);
+      // Extract introductory paragraph before first h2
+      if (!foundFirstHeading) {
+        if (node.nodeType === Node.ELEMENT_NODE && (node.tagName === 'H2' || node.tagName === 'H3')) {
+          foundFirstHeading = true;
+        } else if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'P' && !leadDescription) {
+          leadDescription = node.innerHTML;
+          node.remove();
+          return;
         }
-
-        foundFirstH2 = true;
-        topicIndex++;
-        currentTopicTitle = node.textContent;
-        currentTopicContent = '';
-      } else if (!foundFirstH2) {
-        // Content before first h2 → unit description
-        headerHTML += node.outerHTML || node.textContent;
-      } else {
-        // Content inside a topic
-        currentTopicContent += node.outerHTML || node.textContent;
       }
-    }
 
-    // Don't forget the last topic
-    if (foundFirstH2 && currentTopicTitle) {
-      topicsHTML += buildTopicHTML(currentTopicTitle, currentTopicContent, topicIndex);
-      topicTitles.push(currentTopicTitle);
-    }
+      // Process headings for TOC and permalinks
+      if (node.nodeType === Node.ELEMENT_NODE && (node.tagName === 'H2' || node.tagName === 'H3')) {
+        headingCount++;
+        const titleText = node.textContent.trim();
+        const slug = slugify(titleText) || `section-${headingCount}`;
+        node.id = slug;
 
-    return { headerHTML, topicsHTML, topicTitles };
-  }
+        // Add permalink anchor
+        const anchor = document.createElement('a');
+        anchor.href = `#${slug}`;
+        anchor.className = 'heading-anchor';
+        anchor.setAttribute('aria-label', `Permalink to ${titleText}`);
+        anchor.innerHTML = '#';
+        node.appendChild(anchor);
 
-  function buildTopicHTML(title, content, index) {
-    const openAttr = index <= 2 ? ' open' : '';
-    const id = 'topic-' + index;
-    return `
-      <details class="topic" id="${id}"${openAttr}>
-        <summary class="topic-title">${esc(title)}</summary>
-        <div class="topic-content">${content}</div>
-      </details>`;
-  }
-
-  // ─── Expand / Collapse All ─────────────────────────────────
-  window.__toggleAllTopics = function () {
-    const details = $$('.topic');
-    const btn = $('#btn-expand-all');
-    allExpanded = !allExpanded;
-
-    details.forEach(d => {
-      if (allExpanded) {
-        d.setAttribute('open', '');
-      } else {
-        d.removeAttribute('open');
+        tocItems.push({
+          id: slug,
+          title: titleText,
+          level: node.tagName.toLowerCase()
+        });
       }
     });
 
-    if (btn) {
-      btn.querySelector('span').textContent = allExpanded ? 'Collapse all' : 'Expand all';
-      btn.querySelector('svg').style.transform = allExpanded ? 'rotate(180deg)' : '';
+    return {
+      docHTML: tempDiv.innerHTML,
+      tocItems,
+      leadDescription
+    };
+  }
+
+  function slugify(text) {
+    return text
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  // ─── Code Block Copy Buttons ───────────────────────────────
+  function setupCodeCopyButtons() {
+    const pres = $$('.doc-body pre');
+    pres.forEach(pre => {
+      // Avoid double wrapping
+      if (pre.parentElement.classList.contains('code-block-wrapper')) return;
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'code-block-wrapper';
+
+      // Detect language from class (e.g. class="language-bash")
+      const codeEl = pre.querySelector('code');
+      let lang = 'CODE';
+      if (codeEl) {
+        const langClass = Array.from(codeEl.classList).find(c => c.startsWith('language-'));
+        if (langClass) {
+          lang = langClass.replace('language-', '').toUpperCase();
+        }
+      }
+
+      const header = document.createElement('div');
+      header.className = 'code-block-header';
+      header.innerHTML = `
+        <span>${esc(lang)}</span>
+        <button class="code-copy-btn" aria-label="Copy code to clipboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          <span>Copy</span>
+        </button>
+      `;
+
+      const copyBtn = header.querySelector('.code-copy-btn');
+      copyBtn.addEventListener('click', async () => {
+        const textToCopy = codeEl ? codeEl.innerText : pre.innerText;
+        try {
+          await navigator.clipboard.writeText(textToCopy);
+          copyBtn.classList.add('copied');
+          copyBtn.querySelector('span').textContent = 'Copied!';
+          setTimeout(() => {
+            copyBtn.classList.remove('copied');
+            copyBtn.querySelector('span').textContent = 'Copy';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy code:', err);
+        }
+      });
+
+      pre.parentNode.insertBefore(wrapper, pre);
+      wrapper.appendChild(header);
+      wrapper.appendChild(pre);
+    });
+  }
+
+  // ─── Table of Contents (TOC) & Active ScrollSpy ────────────
+  function buildTOC(tocItems) {
+    if (!tocItems || tocItems.length === 0) {
+      hideOutline();
+      return;
     }
-  };
 
-  // ─── Print ─────────────────────────────────────────────────
-  let detailsStatesBeforePrint = [];
+    let html = '';
+    tocItems.forEach(item => {
+      const isH3 = item.level === 'h3';
+      const indentStyle = isH3 ? 'padding-left:1.5rem;font-size:0.75rem;' : '';
+      html += `
+        <li class="outline-item">
+          <a href="#${item.id}" class="outline-link" data-id="${item.id}" style="${indentStyle}">
+            ${esc(item.title)}
+          </a>
+        </li>`;
+    });
+    outlineList.innerHTML = html;
 
-  window.__printUnit = function () {
-    window.print();
-  };
+    outlineEl.style.display = '';
 
-  function setupPrintHooks() {
-    window.addEventListener('beforeprint', () => {
-      const details = $$('.topic');
-      detailsStatesBeforePrint = [];
-      details.forEach(d => {
-        detailsStatesBeforePrint.push(d.hasAttribute('open'));
-        d.setAttribute('open', '');
+    // Click handler for smooth scroll
+    outlineList.querySelectorAll('.outline-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetId = link.getAttribute('data-id');
+        const targetEl = document.getElementById(targetId);
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          history.replaceState(null, '', `#${targetId}`);
+        }
       });
     });
 
-    window.addEventListener('afterprint', () => {
-      const details = $$('.topic');
-      details.forEach((d, i) => {
-        if (i < detailsStatesBeforePrint.length && !detailsStatesBeforePrint[i]) {
-          d.removeAttribute('open');
-        }
-      });
-    });
+    // Activate live ScrollSpy
+    setupScrollSpy();
   }
 
-  // ─── Sidebar ───────────────────────────────────────────────
+  function hideOutline() {
+    outlineEl.style.display = 'none';
+    outlineList.innerHTML = '';
+    if (scrollSpyObserver) {
+      scrollSpyObserver.disconnect();
+      scrollSpyObserver = null;
+    }
+  }
+
+  function setupScrollSpy() {
+    if (scrollSpyObserver) scrollSpyObserver.disconnect();
+
+    const headings = Array.from($$('.doc-body h2, .doc-body h3'));
+    if (headings.length === 0) return;
+
+    const links = Array.from(outlineList.querySelectorAll('.outline-link'));
+
+    scrollSpyObserver = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          links.forEach(l => l.classList.remove('active'));
+          const activeLink = outlineList.querySelector(`[data-id="${id}"]`);
+          if (activeLink) {
+            activeLink.classList.add('active');
+          }
+        }
+      }
+    }, {
+      rootMargin: '-80px 0px -70% 0px',
+      threshold: 0
+    });
+
+    headings.forEach(h => scrollSpyObserver.observe(h));
+  }
+
+  // ─── Reading Progress Bar ──────────────────────────────────
+  function setupReadingProgressBar() {
+    window.addEventListener('scroll', () => {
+      if (!progressBar) return;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (docHeight > 0) {
+        const progress = Math.min(100, Math.max(0, (window.scrollY / docHeight) * 100));
+        progressBar.style.width = `${progress}%`;
+      } else {
+        progressBar.style.width = '0%';
+      }
+    }, { passive: true });
+  }
+
+  // ─── Sidebar Navigation Tree ───────────────────────────────
   function updateSidebar(activeSubjectId, activeUnitId) {
-    if (!subjectsData) return;
+    if (!subjectsData || !subjectsData.subjects) return;
 
     let html = '';
     for (const s of subjectsData.subjects) {
-      const isActive = s.id === activeSubjectId;
-      const linkClass = isActive ? 'sidebar-link active' : 'sidebar-link';
-      const href = `#/subject/${s.id}`;
+      const isSubActive = s.id === activeSubjectId;
+      const subHeaderClass = isSubActive ? 'sidebar-subject-header active' : 'sidebar-subject-header';
 
       html += `<li class="sidebar-item">`;
-      html += `<a href="${href}" class="${linkClass}">${esc(s.name)}</a>`;
+      html += `
+        <a href="#/subject/${s.id}" class="${subHeaderClass}">
+          <span>${esc(s.name)}</span>
+          <span class="sidebar-count-chip">${s.units.length}</span>
+        </a>`;
 
-      // Show units if this subject is active
-      if (isActive && s.units.length > 0) {
+      if (s.units && s.units.length > 0) {
         html += '<ul class="sidebar-subnav">';
         for (const u of s.units) {
-          const unitActive = u.id === activeUnitId;
-          const uClass = unitActive ? 'sidebar-link active' : 'sidebar-link';
+          const isUnitActive = isSubActive && u.id === activeUnitId;
+          const uClass = isUnitActive ? 'sidebar-link active' : 'sidebar-link';
           html += `<li><a href="#/subject/${s.id}/${u.id}" class="${uClass}">${esc(u.title)}</a></li>`;
         }
         html += '</ul>';
@@ -424,71 +576,10 @@
     document.body.style.overflow = '';
   }
 
-  // ─── Outline ───────────────────────────────────────────────
-  function buildOutline(topicTitles) {
-    if (!topicTitles || topicTitles.length === 0) {
-      hideOutline();
-      return;
-    }
-
-    let html = '';
-    topicTitles.forEach((title, i) => {
-      html += `<li><a href="#topic-${i + 1}" class="outline-link" data-topic="${i + 1}">${esc(title)}</a></li>`;
-    });
-    outlineList.innerHTML = html;
-
-    // Show outline on wide screens (CSS handles display via media query)
-    outlineEl.style.display = '';
-
-    // Add click handlers
-    outlineList.querySelectorAll('.outline-link').forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const topicId = link.getAttribute('href').slice(1);
-        const topicEl = document.getElementById(topicId);
-        if (topicEl) {
-          topicEl.setAttribute('open', '');
-          topicEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      });
-    });
-
-    // Scroll spy
-    setupScrollSpy();
-  }
-
-  function hideOutline() {
-    outlineEl.style.display = 'none';
-    outlineList.innerHTML = '';
-  }
-
-  function setupScrollSpy() {
-    const links = outlineList.querySelectorAll('.outline-link');
-    if (links.length === 0) return;
-
-    const observer = new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          const id = entry.target.id;
-          links.forEach(l => l.classList.remove('active'));
-          const active = outlineList.querySelector(`[data-topic="${id.replace('topic-', '')}"]`);
-          if (active) active.classList.add('active');
-        }
-      }
-    }, {
-      rootMargin: `-${parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) + 20}px 0px -60% 0px`,
-      threshold: 0
-    });
-
-    $$('.topic').forEach(t => observer.observe(t));
-  }
-
-  // ─── Search ────────────────────────────────────────────────
+  // ─── Search & Command Palette (⌘K) ─────────────────────────
   function setupSearch() {
-    // Open
     searchTrigger.addEventListener('click', openSearch);
 
-    // Keyboard shortcut
     document.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
         e.preventDefault();
@@ -499,28 +590,56 @@
       }
     });
 
-    // Close on overlay click
     searchModal.addEventListener('click', (e) => {
       if (e.target === searchModal) closeSearch();
     });
 
-    // Search input
-    let searchTimeout;
+    let debounceTimer;
     searchInput.addEventListener('input', () => {
-      clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(() => {
-        performSearch(searchInput.value);
-      }, 200);
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        performSearch(searchInput.value.trim());
+      }, 150);
+    });
+
+    // Arrow navigation in search results
+    searchInput.addEventListener('keydown', (e) => {
+      const items = $$('.search-result-item');
+      const selected = $('.search-result-item.selected');
+      let index = Array.from(items).indexOf(selected);
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (items.length === 0) return;
+        if (selected) selected.classList.remove('selected');
+        index = (index + 1) % items.length;
+        items[index].classList.add('selected');
+        items[index].scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (items.length === 0) return;
+        if (selected) selected.classList.remove('selected');
+        index = (index - 1 + items.length) % items.length;
+        items[index].classList.add('selected');
+        items[index].scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (selected) {
+          selected.click();
+        } else if (items.length > 0) {
+          items[0].click();
+        }
+      }
     });
   }
 
   function openSearch() {
     searchModal.classList.add('active');
-    searchInput.focus();
-    searchInput.select();
+    searchInput.value = '';
+    searchResults.innerHTML = '<div class="search-empty">Type keywords to search across all notes…</div>';
     document.body.style.overflow = 'hidden';
+    setTimeout(() => searchInput.focus(), 50);
 
-    // Build index on first open
     if (!searchIndex && !searchIndexBuilding) {
       buildSearchIndex();
     }
@@ -535,48 +654,51 @@
     searchIndexBuilding = true;
     searchIndex = [];
 
+    if (!subjectsData || !subjectsData.subjects) return;
+
     for (const subject of subjectsData.subjects) {
       for (const unit of subject.units) {
-        const url = `subjects/${subject.id}/${unit.id}.md`;
         try {
-          const res = await fetch(url);
+          const res = await fetch(`subjects/${subject.id}/${unit.id}.md`);
           if (!res.ok) continue;
-          const md = await res.text();
+          const text = await res.text();
 
-          // Split by ## to get topics
-          const sections = md.split(/^## /m);
+          // Index by sections
+          const lines = text.split('\n');
+          let currentSection = unit.title;
+          let currentContent = '';
 
-          // First section (before any ##) — unit-level content
-          if (sections[0].trim()) {
-            searchIndex.push({
-              subject: subject.name,
-              subjectId: subject.id,
-              unit: unit.title,
-              unitId: unit.id,
-              topic: unit.title,
-              content: sections[0].replace(/^#\s+.+$/m, '').trim(),
-              url: `#/subject/${subject.id}/${unit.id}`
-            });
+          for (const line of lines) {
+            if (line.startsWith('## ') || line.startsWith('### ')) {
+              if (currentContent.trim()) {
+                searchIndex.push({
+                  subjectId: subject.id,
+                  subjectName: subject.name,
+                  unitId: unit.id,
+                  unitTitle: unit.title,
+                  section: currentSection,
+                  content: currentContent.trim()
+                });
+              }
+              currentSection = line.replace(/^#+\s*/, '');
+              currentContent = '';
+            } else {
+              currentContent += ' ' + line;
+            }
           }
 
-          // Each ## section
-          for (let i = 1; i < sections.length; i++) {
-            const lines = sections[i].split('\n');
-            const topicTitle = lines[0].trim();
-            const content = lines.slice(1).join('\n').trim();
-
+          if (currentContent.trim()) {
             searchIndex.push({
-              subject: subject.name,
               subjectId: subject.id,
-              unit: unit.title,
+              subjectName: subject.name,
               unitId: unit.id,
-              topic: topicTitle,
-              content: content,
-              url: `#/subject/${subject.id}/${unit.id}`
+              unitTitle: unit.title,
+              section: currentSection,
+              content: currentContent.trim()
             });
           }
         } catch (e) {
-          // skip
+          // ignore indexing errors for single file
         }
       }
     }
@@ -585,8 +707,8 @@
   }
 
   function performSearch(query) {
-    if (!query || query.trim().length < 2) {
-      searchResults.innerHTML = '<div class="search-empty">Start typing to search across all notes</div>';
+    if (!query) {
+      searchResults.innerHTML = '<div class="search-empty">Type keywords to search across all notes…</div>';
       return;
     }
 
@@ -595,98 +717,99 @@
       return;
     }
 
-    const q = query.toLowerCase().trim();
-    const results = [];
+    const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+    const matches = [];
 
     for (const entry of searchIndex) {
-      const titleMatch = entry.topic.toLowerCase().includes(q);
-      const contentMatch = entry.content.toLowerCase().includes(q);
+      const fullText = (entry.unitTitle + ' ' + entry.section + ' ' + entry.content).toLowerCase();
+      let score = 0;
+      let allFound = true;
 
-      if (titleMatch || contentMatch) {
-        let snippet = '';
-        if (contentMatch) {
-          // Strip markdown syntax for snippet
-          const plainContent = entry.content
-            .replace(/[#*_`~\[\]]/g, '')
-            .replace(/\|/g, ' ')
-            .replace(/\n+/g, ' ')
-            .trim();
-          const idx = plainContent.toLowerCase().indexOf(q);
-          if (idx >= 0) {
-            const start = Math.max(0, idx - 50);
-            const end = Math.min(plainContent.length, idx + query.length + 80);
-            snippet = (start > 0 ? '…' : '') +
-              plainContent.slice(start, end) +
-              (end < plainContent.length ? '…' : '');
-          }
+      for (const term of terms) {
+        if (entry.section.toLowerCase().includes(term)) score += 10;
+        else if (entry.unitTitle.toLowerCase().includes(term)) score += 5;
+        else if (entry.content.toLowerCase().includes(term)) score += 1;
+        else {
+          allFound = false;
+          break;
         }
+      }
 
-        results.push({
-          ...entry,
-          snippet,
-          titleMatch,
-          relevance: titleMatch ? 2 : 1
-        });
+      if (allFound && score > 0) {
+        matches.push({ entry, score });
       }
     }
 
-    results.sort((a, b) => b.relevance - a.relevance);
+    matches.sort((a, b) => b.score - a.score);
+    const topMatches = matches.slice(0, 15);
 
-    if (results.length === 0) {
-      searchResults.innerHTML = `<div class="search-no-results">No results found for "${esc(query)}"</div>`;
+    if (topMatches.length === 0) {
+      searchResults.innerHTML = '<div class="search-no-results">No matching notes found. Try another query.</div>';
       return;
     }
 
-    // Group by subject
-    const grouped = {};
-    for (const r of results) {
-      if (!grouped[r.subject]) grouped[r.subject] = [];
-      grouped[r.subject].push(r);
-    }
-
     let html = '';
-    for (const [subject, items] of Object.entries(grouped)) {
-      html += `<div class="search-result-group">`;
-      html += `<div class="search-result-group-title">${esc(subject)}</div>`;
-      for (const item of items.slice(0, 8)) {
-        const snippetHTML = item.snippet
-          ? `<div class="search-result-snippet">${highlightMatch(esc(item.snippet), query)}</div>`
-          : '';
-        html += `
-          <a href="${item.url}" class="search-result-item" onclick="document.querySelector('.search-modal').classList.remove('active');document.body.style.overflow='';">
-            <div class="search-result-title">${highlightMatch(esc(item.topic), query)}</div>
-            <div class="search-result-path">${esc(item.unit)}</div>
-            ${snippetHTML}
-          </a>`;
-      }
-      html += `</div>`;
-    }
+    topMatches.forEach((m, idx) => {
+      const e = m.entry;
+      const snippet = extractSnippet(e.content, terms);
+      const selectedClass = idx === 0 ? ' selected' : '';
+      html += `
+        <a href="#/subject/${e.subjectId}/${e.unitId}" class="search-result-item${selectedClass}" onclick="window.__closeSearch()">
+          <div class="search-result-title">${highlightTerms(esc(e.section), terms)}</div>
+          <div class="search-result-path">${esc(e.subjectName)} › ${esc(e.unitTitle)}</div>
+          <div class="search-result-snippet">${highlightTerms(snippet, terms)}</div>
+        </a>`;
+    });
 
     searchResults.innerHTML = html;
   }
 
-  function highlightMatch(text, query) {
-    if (!query) return text;
-    const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
-    return text.replace(regex, '<mark>$1</mark>');
+  window.__closeSearch = closeSearch;
+
+  function extractSnippet(content, terms) {
+    const plain = content.replace(/[#*`_\[\]()|>-]/g, ' ').replace(/\s+/g, ' ');
+    const lower = plain.toLowerCase();
+
+    let firstIndex = -1;
+    for (const t of terms) {
+      const idx = lower.indexOf(t);
+      if (idx !== -1 && (firstIndex === -1 || idx < firstIndex)) {
+        firstIndex = idx;
+      }
+    }
+
+    if (firstIndex === -1) {
+      return esc(plain.slice(0, 120)) + '…';
+    }
+
+    const start = Math.max(0, firstIndex - 40);
+    const end = Math.min(plain.length, firstIndex + 100);
+    return (start > 0 ? '…' : '') + esc(plain.slice(start, end)) + (end < plain.length ? '…' : '');
   }
 
-  function escapeRegex(str) {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  function highlightTerms(text, terms) {
+    let result = text;
+    for (const t of terms) {
+      if (!t) continue;
+      const re = new RegExp(`(${escapeRegex(t)})`, 'gi');
+      result = result.replace(re, '<mark>$1</mark>');
+    }
+    return result;
   }
 
-  // ─── Theme ─────────────────────────────────────────────────
+  function escapeRegex(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  // ─── Theme Management ──────────────────────────────────────
   function setupTheme() {
     const saved = localStorage.getItem('btechnotes-theme');
     if (saved === 'dark') {
       document.documentElement.setAttribute('data-theme', 'dark');
     } else if (saved === 'light') {
       document.documentElement.removeAttribute('data-theme');
-    } else {
-      // Check system preference
-      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        document.documentElement.setAttribute('data-theme', 'dark');
-      }
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.documentElement.setAttribute('data-theme', 'dark');
     }
 
     themeToggle.addEventListener('click', () => {
@@ -701,6 +824,57 @@
     });
   }
 
+  // ─── Image Modal / Lightbox ────────────────────────────────
+  function setupImageModal() {
+    document.addEventListener('click', (e) => {
+      const img = e.target.closest('.doc-body img');
+      if (img) {
+        openImageModal(img.src, img.alt || '');
+      }
+    });
+
+    if (imageModalClose) {
+      imageModalClose.addEventListener('click', closeImageModal);
+    }
+
+    if (imageModalBackdrop) {
+      imageModalBackdrop.addEventListener('click', closeImageModal);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && imageModal && imageModal.classList.contains('active')) {
+        closeImageModal();
+      }
+    });
+  }
+
+  function openImageModal(src, caption) {
+    if (!imageModal || !imageModalImg) return;
+    imageModalImg.src = src;
+    imageModalImg.alt = caption;
+    if (imageModalCaption) {
+      imageModalCaption.textContent = caption;
+      imageModalCaption.style.display = caption ? 'block' : 'none';
+    }
+    imageModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeImageModal() {
+    if (!imageModal) return;
+    imageModal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  // ─── Print Support ─────────────────────────────────────────
+  window.__printUnit = function () {
+    window.print();
+  };
+
+  function setupPrintHooks() {
+    // Standard print hook
+  }
+
   // ─── Loading Bar ───────────────────────────────────────────
   function showLoading() {
     loadingBar.classList.add('active');
@@ -710,27 +884,28 @@
     loadingBar.classList.remove('active');
   }
 
-  // ─── 404 ───────────────────────────────────────────────────
+  // ─── 404 View ──────────────────────────────────────────────
   function renderNotFound(message) {
     document.title = 'Not Found — BTech Notes';
     updateSidebar(null, null);
     hideOutline();
     contentEl.innerHTML = `
-      <div style="padding:3rem 0;text-align:center;">
-        <h1 style="font-size:1.5rem;margin-bottom:0.5rem;">Not Found</h1>
+      <div style="padding:4rem 0;text-align:center;">
+        <h1 style="font-size:1.5rem;margin-bottom:0.5rem;font-weight:700;">Page Not Found</h1>
         <p style="color:var(--text-secondary);margin-bottom:1.5rem;">${esc(message)}</p>
-        <a href="#/" class="btn">← Back to Home</a>
+        <a href="#/" class="btn-action" style="display:inline-flex;">← Back to Home</a>
       </div>`;
   }
 
   // ─── Utilities ─────────────────────────────────────────────
   function esc(str) {
+    if (!str) return '';
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
   }
 
-  // ─── Start ─────────────────────────────────────────────────
+  // ─── Start Application ─────────────────────────────────────
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {

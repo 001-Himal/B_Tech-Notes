@@ -11,6 +11,21 @@
         { "id": "unit-5", "title": "Unit 5 — Transport Layer" },
         { "id": "unit-6", "title": "Unit 6 — Application & Wireless Networks" }
       ]
+    },
+    {
+      "id": "scripting-cli",
+      "name": "Scripting & CLI",
+      "units": [
+        { "id": "unit-1", "title": "Unit 1 — CLI Fundamentals (Streams, Pipes & Redirection)" },
+        { "id": "unit-2", "title": "Unit 2 — Windows CLI (CMD & PowerShell)" },
+        { "id": "unit-3", "title": "Unit 3 — Linux CLI (Bash & GNU Core Utilities)" },
+        { "id": "unit-4", "title": "Unit 4 — Shell Scripting (Bash & PowerShell Automation)" },
+        { "id": "unit-5", "title": "Unit 5 — Git & GitHub CLI (Version Control & Workflows)" },
+        { "id": "unit-6", "title": "Unit 6 — Docker CLI (Containers, Images, Networks & Compose)" },
+        { "id": "unit-7", "title": "Unit 7 — Kubernetes CLI (kubectl Cluster & Workload Operations)" },
+        { "id": "unit-8", "title": "Unit 8 — Cloud CLIs (AWS, Azure & Google Cloud)" },
+        { "id": "unit-9", "title": "Unit 9 — Package & Runtime CLIs (npm, pip, cargo, brew, winget)" }
+      ]
     }
   ]
 }

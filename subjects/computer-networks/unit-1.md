@@ -2,1119 +2,465 @@
 
 CSE306: Computer Networks — Unit I covers the complete foundation of computer networking: definitions, types, hardware, architecture, topologies, protocols, the OSI model, and the TCP/IP protocol suite.
 
+---
+
 ## 1. Computer Networks
 
 ### What is a Computer Network?
 
 A computer network is a collection of interconnected computers and other devices that communicate with each other to exchange data and share resources and services.
 
-```
-Computer A ───┐
-Computer B ───┼── Switch ─── Router ─── Internet
-Computer C ───┘
-```
+![Basic Computer Network Architecture](subjects/computer-networks/images/basic-network-diagram.jpg)
 
-The computers can communicate because they are connected through networking devices and use common communication protocols.
+The computers can communicate because they are connected through networking devices (switches, routers) and use common communication protocols over physical or wireless links.
 
 ### Goals / Purposes of Computer Networks
 
-**1. Resource Sharing**
+> **1. Resource Sharing:** Allows multiple users to share expensive hardware resources such as printers, centralized storage arrays, internet gateways, and server compute.
+>
+> **2. Data Sharing:** Enables seamless exchange of files, database records, media streams, and collaborative workspaces.
+>
+> **3. Communication:** Real-time messaging, email, voice-over-IP (VoIP), and video conferencing.
+>
+> **4. Remote Access:** Employees and administrators can access internal applications and services securely from any location.
+>
+> **5. Centralized Management:** Organizations can enforce centralized authentication, security policies, backup routines, and software updates.
+>
+> **6. High Reliability & Redundancy:** Replicating files and services across multiple servers ensures high availability even if a single device fails.
 
-Allows multiple users to share resources such as:
-- Printers
-- Storage
-- Internet connection
-- Applications
-
-**2. Data Sharing**
-
-Allows users and systems to exchange files, documents, images, videos, and database information.
-
-**3. Communication**
-
-Networks enable email, messaging, voice calls, and video conferencing.
-
-**4. Remote Access**
-
-Users can access systems and resources from another location.
-
-**5. Centralized Management**
-
-Organizations can centrally manage users, data, security, and network resources.
-
-**6. Reliability and Availability**
-
-Data and services can be distributed across multiple systems, reducing dependence on a single device.
+---
 
 ## 2. Data Communication Basics
 
 ### What is Data Communication?
 
-Data communication is the exchange of data between two or more devices through a communication medium.
+Data communication is the electronic transfer of data between two or more devices via a transmission medium.
 
-```
-Sender → Communication Medium → Receiver
-```
-
-For successful communication, devices need to follow agreed rules called **protocols**.
-
-### Components of Data Communication
-
-A basic data communication system has five important components:
-
-| # | Component | Description | Example |
-|---|-----------|-------------|---------|
-| 1 | **Sender** | The device that generates and sends the data | Computer, smartphone |
-| 2 | **Receiver** | The device that receives the transmitted data | Computer, server |
-| 3 | **Message** | The actual information being communicated | Text, image, audio, video, file |
-| 4 | **Transmission Medium** | The physical or wireless path through which data travels | Ethernet cable, fiber-optic, radio waves |
-| 5 | **Protocol** | The set of rules that controls communication between devices | TCP, HTTP, FTP |
-
-## 3. Communication Modes
-
-Communication mode describes the direction of data transmission between devices. There are three major modes:
-
-### Simplex
-
-In simplex communication, data travels in **only one direction**.
-
-```
-A ─────────→ B
+```text
+Sender ─────────[ Transmission Medium ]─────────→ Receiver
+                    (Rule: Protocol)
 ```
 
-A can transmit, but B cannot transmit back through the same communication arrangement.
+For successful transmission, communicating nodes must follow standardized syntax and timing rules known as **protocols**.
 
-> **Example:** Traditional keyboard → computer communication.
+![5 Components of Data Communication System](subjects/computer-networks/images/data-communication-components.jpg)
 
-**Key point:** One-way communication.
+### Five Essential Components of Data Communication
 
-### Half-Duplex
+| # | Component | Technical Role | Practical Example |
+|---|---|---|---|
+| **1** | **Sender** | Device that generates and initiates data transmission | Laptop, smartphone, IoT sensor |
+| **2** | **Receiver** | Device designated to accept the incoming transmission | Web server, database host, printer |
+| **3** | **Message** | Information payload being communicated | Binary file, HTTP request, video frame |
+| **4** | **Transmission Medium** | Physical/wireless channel transporting signals | Twisted-pair Cat6, Fiber-optic, Wi-Fi radio waves |
+| **5** | **Protocol** | Set of governing rules controlling data format, error check & timing | TCP/IP, HTTPS, IEEE 802.11 |
 
-In half-duplex communication, data can travel in **both directions, but not at the same time**.
+---
 
+## 3. Communication Modes (Transmission Modes)
+
+Communication mode defines the directional capability of data flow between two interconnected systems.
+
+![Transmission Modes: Simplex, Half-Duplex, Full-Duplex](subjects/computer-networks/images/transmission-modes.jpg)
+
+### Simplex Mode
+
+Data travels strictly in **one direction** (unidirectional). The transmitter sends data; the receiver can only accept it with no mechanism to respond over the same channel.
+
+```text
+Sender [ A ] ──────────────────────────────────────────→ [ B ] Receiver
 ```
-A ─────→ B
-A ←───── B
+
+> **Examples:** Traditional keyboard to CPU, television broadcast, FM radio.
+
+### Half-Duplex Mode
+
+Data can travel in **both directions, but not simultaneously**. Each end can transmit or receive, but while one is transmitting, the other must listen.
+
+```text
+Sender / Receiver [ A ] ────────── (Time 1: →) ──────────→ [ B ] Receiver / Sender
+Sender / Receiver [ A ] ←────────── (Time 2: ←) ────────── [ B ] Receiver / Sender
 ```
 
-One device transmits while the other receives, and then they can reverse roles.
+> **Examples:** Walkie-talkies (push-to-talk), legacy IEEE 802.3 shared-bus Ethernet with CSMA/CD.
 
-> **Example:** Walkie-talkie — one person talks while the other listens.
+### Full-Duplex Mode
 
-**Key point:** Two-way, but one direction at a time.
+Data travels in **both directions simultaneously**. Both communicating nodes can transmit and receive concurrently using separate physical channels or frequency division.
 
-### Full-Duplex
-
-In full-duplex communication, data can travel in **both directions simultaneously**.
-
-```
-A ───────→ B
-A ←─────── B
+```text
+Node [ A ] ⇄══════════════════════════════════════════════⇄ [ B ] Node
 ```
 
-Both devices can transmit and receive at the same time.
+> **Examples:** Telephone call, modern switched Ethernet connections, bidirectional TCP socket connections.
 
-> **Example:** Telephone conversation.
+### Transmission Modes Comparison
 
-**Key point:** Two-way simultaneously.
+| Mode | Directionality | Simultaneous Tx/Rx? | Channel Efficiency | Practical Example |
+|---|---|---|---|---|
+| **Simplex** | Unidirectional ($A \to B$) | No | Low (one-way only) | Keyboard $\to$ Computer |
+| **Half-Duplex** | Bidirectional ($A \rightleftarrows B$) | No (Alternating) | Moderate | Walkie-Talkie |
+| **Full-Duplex** | Bidirectional ($A \rightleftarrows B$) | Yes (Simultaneous) | High (Full bandwidth) | Switched Ethernet, Phone Call |
 
-### Comparison Table
-
-| Mode | Direction | Simultaneous? | Example |
-|------|-----------|---------------|---------|
-| **Simplex** | One-way | No | Keyboard → computer |
-| **Half-Duplex** | Two-way | No | Walkie-talkie |
-| **Full-Duplex** | Two-way | Yes | Telephone |
-
-> **Memory trick:** Simplex = One way · Half = Both ways, one at a time · Full = Both ways, simultaneously
+---
 
 ## 4. Connection Types & Data Delivery
 
-### Point-to-Point
+### Line Configuration: Point-to-Point vs Multipoint
 
-A point-to-point connection provides a **dedicated communication link** between two devices.
+![Point-to-Point Connection](subjects/computer-networks/images/point-to-point.jpg)
 
-```
-A ═════════ B
-```
+- **Point-to-Point:** A dedicated physical link between exactly two communicating devices. The entire bandwidth capacity of the channel is reserved exclusively for these two nodes (e.g. dedicated leased line between two core routers).
 
-The entire link is used by these two devices only.
+![Multipoint Connection Topology](subjects/computer-networks/images/multipoint-topology.jpg)
 
-> **Example:** A direct connection between two routers.
+- **Multipoint (Multi-drop):** A single physical transmission medium is shared among three or more devices simultaneously (e.g. Wi-Fi airspace, legacy coax bus).
 
-**Key idea:** One sender ↔ one receiver.
+---
 
-### Multipoint
+### Data Delivery Cast Modes: Unicast, Multicast & Broadcast
 
-A multipoint connection is a communication link **shared by multiple devices**.
+![Unicast vs Multicast vs Broadcast](subjects/computer-networks/images/unicast-multicast-broadcast.jpg)
 
-```
-       A
-       |
-B ─────┼───── C
-       |
-       D
-```
+| Mode | Addressing Scheme | Target Ratio | Practical Example |
+|---|---|---|---|
+| **Unicast** | Specific destination host IP/MAC | **$1 \to 1$** (One-to-One) | Loading a webpage via HTTPS (`192.168.1.10` $\to$ `93.184.216.34`) |
+| **Multicast** | Class D multicast group IP (`224.0.0.0/4`) | **$1 \to \text{Group}$** (One-to-Many) | Live IPTV stream, Zoom video feed, OSPF router hellos |
+| **Broadcast** | Broadcast address (`255.255.255.255` or subnet broadcast) | **$1 \to \text{All}$** (One-to-All) | ARP Request ("Who has IP `192.168.1.1`?"), DHCP Discover |
 
-A single communication medium can be shared among several devices.
+---
 
-**Key idea:** One medium ↔ multiple devices.
+## 5. Types of Networks by Geographical Scale
 
-### Unicast
+Networks are classified based on the physical distance and geographic area they span.
 
-Communication from **one sender to one specific receiver**.
+![PAN, LAN, MAN, WAN Geographical Coverage](subjects/computer-networks/images/pan-lan-man-wan.jpg)
 
-```
-A ─────────→ B
-```
+### 1. PAN — Personal Area Network
+- **Coverage Range:** $\approx 1$ to 10 meters (centered around an individual).
+- **Technologies:** Bluetooth (IEEE 802.15.1), Zigbee, USB, NFC.
+- **Use Cases:** Connecting smartphone to smartwatch, wireless earbuds, or vehicle hands-free.
 
-> **Example:** Your computer requesting a webpage from a server.
+---
 
-**1 → 1**
+### 2. LAN — Local Area Network
 
-### Multicast
+![Local Area Network (LAN)](subjects/computer-networks/images/lan-diagram.jpg)
 
-Communication from **one sender to a selected group** of receivers.
+- **Coverage Range:** Within a room, office floor, single building, or small academic campus ($< 1 \text{ km}$).
+- **Ownership:** Privately owned and managed by a single individual or organization.
+- **Speed & Delay:** Very high data rates ($1\text{ Gbps} - 100\text{ Gbps}$), ultra-low latency ($< 1\text{ ms}$), minimal error rates.
+- **Technologies:** Ethernet (IEEE 802.3), Wi-Fi (IEEE 802.11).
 
-```
-        → B
-A ──────→ C
-        → D
-```
+---
 
-Only members of the specific group receive the data.
+### 3. MAN — Metropolitan Area Network
 
-**1 → Selected many**
+![Metropolitan Area Network (MAN)](subjects/computer-networks/images/man-diagram.jpg)
 
-### Broadcast
+- **Coverage Range:** Spans an entire city or large municipal region ($5\text{ km} - 50\text{ km}$).
+- **Ownership:** Municipalities, telecom consortia, or ISP regional backbones.
+- **Technologies:** Metro Ethernet, Dark Fiber Rings, Cellular 5G base stations, Cable TV networks.
+- **Use Cases:** City smart-traffic surveillance, municipal banking networks, inter-branch university campuses.
 
-Communication from **one sender to all devices** within the relevant broadcast domain/network.
+---
 
-```
-        → B
-A ──────→ C
-        → D
-        → E
-```
+### 4. WAN — Wide Area Network
 
-**1 → All**
+![Wide Area Network (WAN)](subjects/computer-networks/images/wan-diagram.jpg)
 
-## 5. Types of Networks
+- **Coverage Range:** Spans multiple cities, countries, continents, or the entire globe ($> 100\text{ km}$).
+- **Ownership:** Multiple public/private Tier-1 Internet Service Providers (ISPs) interconnected via Internet Exchange Points (IXPs) and undersea fiber-optic cables.
+- **Speed & Latency:** Variable speeds ($10\text{ Mbps} - 400\text{ Gbps}$), higher latency ($20\text{ ms} - 250\text{ ms}$) due to propagation distance.
+- **Prime Example:** The global **Internet**.
 
-### PAN — Personal Area Network
+---
 
-A Personal Area Network connects devices within a **very small area** around an individual.
+### Geographical Scale Comparison Matrix
 
-**Example:** Phone connected to smartwatch, earbuds, wireless keyboard.
+| Parameter | PAN | LAN | MAN | WAN |
+|---|---|---|---|---|
+| **Geographic Span** | Up to $10\text{ m}$ | Up to $1\text{ km}$ | $5 - 50\text{ km}$ | Worldwide ($> 100\text{ km}$) |
+| **Data Transfer Rate** | $\approx 1 - 24\text{ Mbps}$ | $100\text{ Mbps} - 10\text{ Gbps}+$ | $100\text{ Mbps} - 1\text{ Gbps}$ | Variable ($10\text{ Mbps} - 400\text{ Gbps}$) |
+| **Propagation Delay** | Negligible ($\mu\text{s}$) | Very Low ($< 2\text{ ms}$) | Moderate ($5 - 15\text{ ms}$) | High ($30 - 300\text{ ms}$) |
+| **Cost & Complexity** | Minimal | Low / Moderate | High | Very High |
+| **Fault Tolerance** | Low | High | Moderate | High (Mesh routing) |
 
-**Characteristics:**
-- Very small range
-- Usually personal devices
-- Bluetooth is commonly used
-
-### LAN — Local Area Network
-
-A Local Area Network connects devices within a **limited geographical area**.
-
-**Examples:** Home, office, computer laboratory, building, campus.
-
-**Characteristics:**
-- Small geographical area
-- Usually privately managed
-- Generally high-speed communication
-- Ethernet and Wi-Fi are common technologies
-
-### MAN — Metropolitan Area Network
-
-A Metropolitan Area Network connects networks across a **city or metropolitan area**.
-
-**Example:** An organization connecting multiple offices located throughout one city.
-
-### WAN — Wide Area Network
-
-A Wide Area Network connects networks across a **large geographical area** — multiple cities, countries, or continents.
-
-**Example:** The Internet.
-
-### Comparison Table
-
-| Network | Coverage | Example |
-|---------|----------|---------|
-| **PAN** | Personal / small area | Phone + smartwatch |
-| **LAN** | Building / campus | College lab |
-| **MAN** | City | City-wide network |
-| **WAN** | Very large / global | Internet |
-
-> **Memory:** PAN → LAN → MAN → WAN (Small → Large → Larger → Global)
+---
 
 ## 6. Internet, Intranet & Extranet
 
+![The Global Internet](subjects/computer-networks/images/internet-diagram.jpg)
+
 ### Internet
+The **Internet** is the globally interconnected system of autonomous public and private computer networks utilizing the standardized **TCP/IP protocol suite**.
+- **Access Level:** Public to anyone with an ISP subscription.
+- **Governance:** Decentralized (IETF, ICANN, W3C standards).
 
-The Internet is a **global system of interconnected networks** that communicate using the TCP/IP protocol suite. It is a public/global network.
+---
 
-**Examples:** Websites, email, online services, cloud services.
+### Intranet vs Extranet
 
-### Intranet
+![Internet vs Intranet](subjects/computer-networks/images/internet-vs-intranet.jpg)
 
-An intranet is a **private network** used within an organization to provide internal resources and services to authorized users.
+![Intranet vs Extranet](subjects/computer-networks/images/intranet-vs-extranet.jpg)
 
-**Example:** A company's internal employee portal.
+- **Intranet:** A strictly **private, firewalled corporate network** accessible exclusively by internal employees to share confidential documents, HR portals, and internal tooling.
 
-### Extranet
+![Extranet Network Architecture](subjects/computer-networks/images/extranet-diagram.jpg)
 
-An extranet is a **private network or controlled extension** of an organization's network that provides authorized external users with access to selected resources.
+- **Extranet:** A secure, controlled extension of an organization's Intranet enabling **authorized external third parties** (vendors, suppliers, certified partners, enterprise clients) to access specific resources via secure VPNs or authenticated portals.
 
-**Example:** A company allowing selected suppliers to access its inventory system.
+### Network Scope Comparison
 
-### Easy Distinction
+| Metric | Internet | Intranet | Extranet |
+|---|---|---|---|
+| **Target Audience** | General public worldwide | Internal employees / staff | Employees + Verified external partners |
+| **Security Perimeter** | Public / Open access | High (Protected behind corporate Firewalls) | Strict (Firewalls + IP filtering + VPN tunnels) |
+| **Hosting Model** | Distributed global servers | Internal on-prem / Private cloud | Hybrid VPN / Secured DMZ |
 
-| Type | Access |
-|------|--------|
-| **Internet** | Everyone / public |
-| **Intranet** | Organization's internal users |
-| **Extranet** | Organization + authorized external users |
+---
 
-## 7. Network Architectures
+## 7. Network Architectures: Client-Server vs Peer-to-Peer (P2P)
+
+Network architecture determines how compute tasks, storage, and control responsibilities are partitioned among participating nodes.
+
+![Client-Server vs Peer-to-Peer Architecture](subjects/computer-networks/images/client-server-vs-p2p.jpg)
 
 ### Client-Server Architecture
 
-A client-server architecture is a network architecture in which **clients request services** from servers, and **servers provide them**.
+- **Server:** High-performance host providing specialized services (HTTP, DNS, Database, Mail).
+- **Client:** End-user device initiating request-response transactions with the server.
+- **Strengths:** Centralized data integrity, simple role-based access control, streamlined backup routines, high horizontal scalability.
+- **Weakness:** Server hardware represents a single point of failure if not load-balanced.
 
-```
-Client A ──┐
-Client B ──┼──→ Server
-Client C ──┘
-```
+### Peer-to-Peer (P2P) Architecture
 
-- **Client** — A device/application that requests a service.
-- **Server** — A device/application that provides a service.
+- **Peers (Servents):** All nodes possess equal privileges and can simultaneously act as both clients and servers.
+- **Strengths:** Extreme fault tolerance, no expensive central infrastructure, bandwidth scales organically with node count.
+- **Weakness:** Complex distributed security, decentralized data consistency challenges.
+- **Examples:** BitTorrent file distribution, Bitcoin blockchain, WebRTC peer data channels.
 
-> **Example:** Browser (client) requesting a webpage from a web server.
-
-**Advantages:**
-- Centralized management
-- Easier data management
-- Better resource control
-- Suitable for large networks
-
-**Disadvantage:** The server can become a critical dependency if not designed for redundancy.
-
-### Peer-to-Peer (P2P)
-
-In a peer-to-peer network, devices can act as **both clients and servers**, sharing resources directly with one another.
-
-```
-A ↔ B
-↕   ↕
-C ↔ D
-```
-
-There is no requirement for one central server to provide all services.
-
-**Advantages:**
-- Simple for small networks
-- No dedicated central server required
-- Direct resource sharing
-
-**Disadvantages:**
-- Difficult to centrally manage
-- Security can be harder to control
-- Less suitable for large organizations
-
-### Comparison
-
-| Feature | Client-Server | P2P |
-|---------|---------------|-----|
-| Central server | Yes | Not required |
-| Management | Centralized | Decentralized |
-| Scalability | Better | Limited |
-| Administration | Easier | More difficult |
-| Suitable for | Large networks | Small/simple networks |
+---
 
 ## 8. Network Hardware & Devices
 
-Network hardware refers to the physical devices and components used to connect devices and enable network communication.
+Network devices operate at distinct layers of the protocol stack to regenerate signals, filter frames, route packets, or bridge disparate protocols.
 
-### NIC — Network Interface Card
+![Network Devices across OSI Layers](subjects/computer-networks/images/network-devices-osi.jpg)
 
-A NIC is a hardware component that provides a device with the capability to **connect to a network**.
+### Hardware Device Directory
 
-- Provides network connectivity
-- Sends and receives network data
-- Has a **MAC address**
-- Types: Wired NIC, Wireless NIC
-- **Layer:** Physical (L1) and Data Link (L2)
+1. **Network Interface Card (NIC):** Physical PCIe card or embedded chip providing hardware layer connection, transceiver capabilities, and a globally unique burnt-in 48-bit **MAC Address** (Layer 1/2).
+2. **Repeater:** Physical layer hardware that amplifies or reshapes weakened electrical/optical signals to extend maximum cable distance (Layer 1).
+3. **Hub:** Legacy multi-port physical layer repeater. When an electrical signal enters one port, it blindly broadcasts it out across **all other ports**, causing massive collision domains (Layer 1).
+4. **Bridge:** Layer 2 device that inspects source/destination MAC addresses to partition a large network into two distinct collision domains (Layer 2).
+5. **Switch:** Intelligent multi-port Layer 2 bridge. Maintains a dynamic **MAC Address Table (CAM Table)** to switch Ethernet frames directly between source and destination ports with full collision isolation (Layer 2).
+6. **Router:** Layer 3 internetworking gateway. Reads IP packet headers, maintains dynamic routing tables (OSPF, BGP), and determines optimal paths across independent IP subnets (Layer 3).
+7. **Gateway:** Enterprise boundary device performing protocol translation between fundamentally incompatible network architectures (e.g. VoIP Gateway translating SIP to PSTN).
+8. **Wireless Access Point (WAP):** Bridges IEEE 802.11 wireless radio frames with IEEE 802.3 wired Ethernet frames (Layer 2).
+9. **Modem (Modulator-Demodulator):** Converts digital computer binary pulses into analog carrier signals suitable for telephone/cable lines, and vice versa.
 
-### Hub
+---
 
-A hub is a basic networking device that connects multiple devices and **broadcasts incoming data to all of its ports**.
+### Hub vs Switch vs Router Comparison
 
-```
-       PC
-        |
-PC ─── Hub ─── PC
-        |
-       PC
-```
+![Hub vs Switch vs Router Comparison](subjects/computer-networks/images/hub-switch-router.jpg)
 
-If A sends data to B, the hub also sends the signal toward all other connected ports.
+| Feature | Hub | Switch | Router |
+|---|---|---|---|
+| **OSI Operating Layer** | **Layer 1** (Physical) | **Layer 2** (Data Link) / L3 Switch | **Layer 3** (Network) |
+| **Addressing Used** | None (Raw electrical bits) | **MAC Address** (48-bit hardware) | **IP Address** (32-bit / 128-bit logical) |
+| **Data Forwarding Unit** | Bits | **Frames** | **Packets** |
+| **Forwarding Decision** | Blind broadcast to all ports | Hardware CAM Table unicast | Software/ASIC Routing Table lookup |
+| **Collision Domains** | Single shared collision domain | Separate collision domain per port | Separate collision domain per port |
+| **Broadcast Domains** | Single broadcast domain | Single broadcast domain (without VLAN) | Separates broadcast domains per subnet |
+| **Intelligent Filtering** | None | High (MAC filtering) | High (IP routing, ACLs, NAT, QoS) |
 
-**Characteristics:**
-- No intelligent forwarding
-- Does not use destination MAC addresses
-- Shared communication medium
-- **Layer 1 — Physical**
+---
 
-### Switch
+## 9. Network Software Architecture & Encapsulation
 
-A switch connects devices in a LAN and **forwards Ethernet frames** toward the appropriate destination using **MAC addresses**.
+### Layered Architecture Philosophy
 
-```
-PC A ──┐
-PC B ──┼── Switch
-PC C ──┤
-PC D ──┘
-```
+Network software is structured in a vertical hierarchy of abstraction layers. Each layer provides a well-defined set of services to the layer directly above it while abstracting internal implementation details.
 
-The switch learns which MAC addresses are associated with which ports. When a frame arrives, it examines the destination MAC address and forwards it appropriately.
+> **1. Service:** What functionality a layer delivers to the upper adjacent layer.
+>
+> **2. Interface:** The software API or boundary mechanism used by an upper layer to request a service from a lower layer.
+>
+> **3. Protocol:** The standardized syntax, semantics, and synchronization rules followed by peer entities communicating across the network at the same layer.
 
-**Characteristics:**
-- Uses MAC addresses
-- Reduces unnecessary traffic compared with a hub
-- Each switch port provides a separate link
-- **Layer 2 — Data Link**
+---
 
-### Router
+### Data Encapsulation & Decapsulation
 
-A router connects **different networks** and forwards packets between them using **IP addressing**.
+![Data Encapsulation and Decapsulation in OSI Model](subjects/computer-networks/images/data-encapsulation.png)
 
-```
-LAN A ─── Router ─── LAN B
-              |
-           Internet
-```
+- **Encapsulation (Transmitting Host):** As data moves downwards from the Application layer to the Physical layer, each layer prepends a specialized **Header** (and the Data Link layer appends a **Trailer** with CRC checksum) containing addressing and control metadata.
+- **Decapsulation (Receiving Host):** When raw bits arrive at the receiver, data moves upwards. Each corresponding layer inspects, validates, strips its respective header, and passes the payload upward.
 
-**Functions:**
-- Connects different networks
-- Uses IP addresses
-- Determines where packets should be forwarded
-- Maintains routing information
-- **Layer 3 — Network**
-
-### Modem
-
-Modem stands for **Modulator-Demodulator**. It converts signals between forms suitable for transmission over a particular access network and forms usable by network equipment.
-
-- **Modulation** → transmission
-- **Demodulation** → reception
-- Example: A broadband modem connecting a home network to an ISP
-
-### Repeater
-
-A repeater **regenerates or reshapes a signal** to help it travel over a longer physical distance.
-
-- Purpose: Overcomes signal degradation
-- **Layer 1 — Physical**
-
-### Bridge
-
-A bridge connects network segments and forwards frames based on **MAC addresses**.
-
-- **Layer 2 — Data Link**
-- Modern switches perform bridge-like functions on multiple ports
-
-### Gateway
-
-A gateway acts as an **entry/exit point** between different networks or systems, and may perform protocol translation when required.
-
-- The term gateway is broader than a router
-- Can connect systems using different communication protocols
-
-### Access Point
-
-A Wireless Access Point provides wireless devices with access to a network, typically connecting wireless clients to a wired LAN.
-
-```
-Phone   ))))
-Laptop  )))) → Access Point → Switch → Router
-Tablet  ))))
+```text
+Application Layer  → [ DATA ]
+Transport Layer    → [ TH | DATA ]                          → (Segment / Datagram)
+Network Layer      → [ NH | TH | DATA ]                     → (Packet)
+Data Link Layer    → [ DLH | NH | TH | DATA | DLT (CRC) ]   → (Frame)
+Physical Layer     → 01010011 01100101 01101110 01100100   → (Raw Bits)
 ```
 
-### Quick Reference Table
-
-| Device | Main Function | Main Layer |
-|--------|---------------|------------|
-| **NIC** | Network connectivity | L1/L2 |
-| **Repeater** | Regenerates signals | L1 |
-| **Hub** | Broadcasts signals to ports | L1 |
-| **Bridge** | Connects LAN segments using MAC | L2 |
-| **Switch** | Forwards frames using MAC | L2 |
-| **Router** | Connects networks using IP | L3 |
-| **Gateway** | Connects/translates between systems | Depends |
-| **Access Point** | Provides wireless network access | L2 |
-| **Modem** | Converts signals for access network | Depends |
-
-### Hub vs Switch vs Router
-
-```
-Hub:    Device → Hub    → Everyone
-Switch: Device → Switch → Correct device
-Router: Network → Router → Another network
-```
-
-| | Hub | Switch | Router |
-|-|-----|--------|--------|
-| **Action** | Broadcasts | Selectively forwards | Routes between networks |
-| **Address used** | None | MAC address | IP address |
-| **Layer** | Layer 1 | Layer 2 | Layer 3 |
-| **Efficiency** | Less efficient | More efficient | Connects networks |
-
-## 9. Network Software Architecture
-
-### Hardware vs Software Architecture
-
-**Hardware architecture** describes the physical arrangement of networking devices, connections, and transmission media — computers, NICs, hubs, switches, routers, cables, wireless devices, and the connections between them.
-
-**Software architecture** describes how networking functions are organized into **logical layers and protocols**. Instead of putting all networking functions into one huge system, networking divides them into manageable layers.
-
-### Layered Architecture
-
-Layered architecture divides network communication into a series of **logical layers**, where each layer performs a specific function.
-
-**Why use layers?**
-
-1. **Reduces complexity** — A complicated process becomes a collection of smaller tasks.
-2. **Modularity** — Each layer focuses on its own responsibility.
-3. **Standardization** — Different vendors can implement compatible networking functions.
-4. **Easier troubleshooting** — A problem can be investigated layer by layer.
-5. **Easier development** — Changes to one layer can often be made without redesigning other layers.
-
-### Services, Interfaces & Protocols
-
-**Service** — A function provided by one network layer to the layer immediately above it.
-
-> Example: The Transport Layer provides end-to-end delivery services to the Application Layer.
-
-**Interface** — Defines how one layer communicates with the layer directly above or below it. It specifies how services are accessed.
-
-```
-Upper Layer
-     ↓
- Interface
-     ↓
-Lower Layer
-```
-
-**Protocol** — Defines the rules used by peer entities at the same layer to communicate.
-
-> **Very important distinction:**
-> - **Service** = What a layer provides
-> - **Interface** = How that service is accessed
-> - **Protocol** = Rules used for communication between corresponding entities
-
-### Encapsulation
-
-Encapsulation is the process in which each lower network layer **adds its own control information/header** (and sometimes trailer) to the data received from the layer above.
-
-```
-Application  →  [Data]
-Transport    →  [Transport Header | Data]
-Network      →  [Network Header | Transport Header | Data]
-Data Link    →  [Frame Header | Network Header | Transport Header | Data | Trailer]
-Physical     →  Bits
-```
-
-![Encapsulation Process](assets/images/encapsulation.png)
-
-**Simple definition:** Encapsulation = headers/trailers are added as data moves down the layers.
-
-### Decapsulation
-
-Decapsulation is the **reverse process**. At the receiving device, each layer removes and processes the information added by its corresponding layer.
-
-```
-Bits → Frame → Packet → Segment → Data
-```
-
-**Simple definition:** Decapsulation = headers/trailers are processed and removed as data moves upward.
-
-| | Encapsulation | Decapsulation |
-|-|---------------|---------------|
-| **Side** | Sender | Receiver |
-| **Direction** | Data moves downward | Data moves upward |
-| **Action** | Headers/trailers are added | Headers/trailers are removed |
-| **Flow** | Application → Physical | Physical → Application |
+---
 
 ## 10. Network Topologies
 
-A **network topology** is the arrangement of network devices and communication links.
+Topology defines the geometric arrangement of nodes and physical/logical transmission links in a network.
 
-Two important views:
-- **Physical topology** — Shows the actual physical arrangement of devices and cables.
-- **Logical topology** — Shows how data flows logically through the network.
+![Network Topologies Overview](subjects/computer-networks/images/network-topologies.jpg)
 
-![Network Topologies](assets/images/network-topologies.png)
+### Topologies Comparative Breakdown
 
-### Bus Topology
-
-All devices share one main backbone.
-
-```
-PC ─── PC ─── PC ─── PC
-──────── Backbone ────────
-```
-
-| Advantages | Disadvantages |
-|------------|---------------|
-| Simple | Backbone failure affects entire network |
-| Low cable requirement | Troubleshooting can be difficult |
-| Low cost for small networks | Performance degrades with more traffic |
-| | Limited scalability |
-
-### Star Topology
-
-Every device connects to a **central device** (hub/switch).
-
-```
-       PC
-        |
-PC ── Switch ── PC
-        |
-       PC
-```
-
-| Advantages | Disadvantages |
-|------------|---------------|
-| Easy installation | Central device failure affects all |
-| Easy troubleshooting | More cabling than bus |
-| Easy expansion | Central device adds cost |
-| One link failure doesn't affect others | |
-
-### Ring Topology
-
-Each device connects to two neighboring devices, forming a **ring**.
-
-```
-A ── B
-|    |
-D ── C
-```
-
-| Advantages | Disadvantages |
-|------------|---------------|
-| Predictable communication | Link/node failure can disrupt ring |
-| Defined neighboring connections | More difficult to expand |
-
-### Mesh Topology
-
-Devices have **multiple connections**. In a full mesh, every device connects directly to every other device.
-
-**Full mesh links formula:** Links = n(n − 1) / 2
-
-| Advantages | Disadvantages |
-|------------|---------------|
-| High reliability | Expensive |
-| Multiple paths | Complex |
-| Excellent fault tolerance | Requires many physical links |
-
-### Tree Topology
-
-Devices are arranged **hierarchically**.
-
-```
-          Core
-         /    \
-      SW1      SW2
-     /  \      /  \
-   PC   PC   PC   PC
-```
-
-| Advantages | Disadvantages |
-|------------|---------------|
-| Hierarchical organization | Higher-level failures affect branches |
-| Easy expansion | More complex than simple topologies |
-| Suitable for larger networks | |
-
-### Hybrid Topology
-
-A hybrid topology **combines two or more topology types** (e.g., Star + Bus).
-
-| Advantages | Disadvantages |
-|------------|---------------|
-| Flexible | Complex |
-| Scalable | More expensive |
-| Customizable to requirements | Requires careful management |
-
-## 11. Network Protocols
-
-### Definition
-
-A network protocol is a **set of rules and conventions** that determines how devices communicate and exchange data. Without common protocols, devices may not understand each other's communication.
-
-### Elements of a Protocol
-
-A protocol generally defines three important elements:
-
-**1. Syntax** — Defines the **structure or format** of data. Specifies what fields exist, their order, and their size/format.
-
-> Syntax = What the data **looks like**.
-
-**2. Semantics** — Defines the **meaning** of each field and what action should be taken.
-
-> Semantics = What the data **means**.
-
-**3. Timing** — Defines **when** data should be sent, at what rate, and how quickly the receiver should process it.
-
-> Timing = **When/how fast** data is exchanged.
-
-> **Memory:** Syntax → Structure · Semantics → Meaning · Timing → When/Speed
-
-### Examples of Network Protocols
-
-| Protocol | Purpose |
-|----------|---------|
-| **HTTP** | Web communication |
-| **HTTPS** | Secure web communication |
-| **FTP** | File transfer |
-| **DNS** | Name resolution |
-| **DHCP** | Automatic network configuration |
-| **TCP** | Reliable transport |
-| **UDP** | Connectionless transport |
-| **IP** | Logical addressing and packet delivery |
-| **SMTP** | Sending email |
-
-## 12. OSI Model
-
-### What is the OSI Model?
-
-OSI stands for **Open Systems Interconnection**. The OSI model is a **seven-layer reference model** that organizes network communication into seven functional layers. It was developed by the **International Organization for Standardization (ISO)**.
-
-### Why OSI Model?
-
-- Standardize networking concepts
-- Divide communication into manageable layers
-- Understand how data travels
-- Develop networking technologies
-- Troubleshoot network problems
-- Explain interactions between different networking functions
-
-![OSI Model — 7 Layers](assets/images/osi-model.png)
-
-### The Seven Layers
-
-```
-7  Application
-6  Presentation
-5  Session
-4  Transport
-3  Network
-2  Data Link
-1  Physical
-```
-
-> **Mnemonic:** **A**ll **P**eople **S**eem **T**o **N**eed **D**ata **P**rocessing
+| Topology | Geometric Structure | Key Advantages | Key Disadvantages | Cable Fault Impact |
+|---|---|---|---|---|
+| **Bus** | Single central backbone cable with terminators at ends | Simple installation, minimum cable required for small setups | Backbone failure breaks entire network; difficult troubleshooting | **Catastrophic** (Network down) |
+| **Star** | All end-stations connect to a central Switch/Hub | Easy expansion; single node failure does not affect others | Central switch failure crashes all attached hosts | **Isolated** to failed node |
+| **Ring** | Nodes connected in a closed unidirectional/bidirectional loop | Equal access opportunity (token passing); predictable latency | Single link break can disrupt the entire ring (unless dual-ring FDDI) | **Critical** (Ring collapse) |
+| **Mesh (Full)** | Every node connects directly to every other node: $\text{Links} = \frac{n(n-1)}{2}$ | Maximum redundancy, zero traffic bottleneck, ultimate reliability | Highly expensive, complex cabling and port density | **Zero impact** (Alternate paths) |
+| **Tree** | Hierarchical parent-child branching rooted at core switch | Scalable hierarchical management; modular fault isolation | Core root switch failure disconnects dependent sub-branches | **Partial** to sub-branch |
+| **Hybrid** | Combination of two or more topologies (e.g. Star-Bus) | Highly flexible, customizable for large enterprise campuses | High design complexity and installation cost | **Depends** on segment |
 
 ---
 
-### Layer 7 — Application
+## 11. Network Protocol Elements
 
-The Application Layer provides **network services that applications use** to communicate over a network.
+A network protocol is defined by three fundamental pillars:
 
-**Functions:**
-- Provides network services to applications
-- Supports application-level communication
-- Provides access to network resources
-
-**Examples:** HTTP, FTP, DNS, SMTP
-
-**PDU:** Data
-
----
-
-### Layer 6 — Presentation
-
-The Presentation Layer handles the **representation and transformation of data** so communicating systems can understand it.
-
-**Functions:**
-- **Translation** — Converts data between different representations
-- **Encryption** — Transforms data into a protected form
-- **Decryption** — Converts encrypted data back into usable data
-- **Compression** — Reduces data size
-
-**PDU:** Data
-
-> **Memory:** Presentation = Translation + Encryption + Compression
-
----
-
-### Layer 5 — Session
-
-The Session Layer **establishes, manages, synchronizes, and terminates** communication sessions between applications.
-
-**Functions:**
-- Session establishment
-- Session management
-- Synchronization
-- Session termination
-
-**PDU:** Data
-
----
-
-### Layer 4 — Transport
-
-The Transport Layer provides **end-to-end communication** between applications.
-
-**Functions:**
-- Segmentation and reassembly
-- Flow control
-- Error control
-- Reliable delivery (when provided by the protocol)
-- Connection management
-
-**Protocols:** TCP, UDP
-
-**PDU:** TCP → Segment · UDP → Datagram
-
-**Addressing:** Port number
-
----
-
-### Layer 3 — Network
-
-The Network Layer provides **logical addressing and routing** of packets between networks.
-
-**Functions:**
-- Logical addressing
-- Routing
-- Path selection
-- Packet forwarding
-
-**Example protocol:** IP
-
-**PDU:** Packet
-
-**Addressing:** IP address
-
-**Device:** Router
-
----
-
-### Layer 2 — Data Link
-
-The Data Link Layer provides communication between **directly connected nodes** over a link.
-
-**Functions:**
-- Framing
-- MAC addressing
-- Error detection
-- Media access control
-- Link-level flow/control functions
-
-**PDU:** Frame
-
-**Addressing:** MAC address
-
-**Devices:** Switch, Bridge
-
----
-
-### Layer 1 — Physical
-
-The Physical Layer is responsible for transmitting **raw bits** over the physical communication medium.
-
-**Functions:**
-- Bit transmission
-- Electrical/optical/radio signaling
-- Physical interfaces
-- Cables and connectors
-- Physical transmission characteristics
-
-**PDU:** Bits
-
-**Devices:** Hub, Repeater
-
----
-
-### Complete OSI Table
-
-| Layer | Name | Main Responsibility | PDU | Address |
-|-------|------|---------------------|-----|---------|
-| 7 | Application | Network services | Data | — |
-| 6 | Presentation | Translation, encryption, compression | Data | — |
-| 5 | Session | Session management | Data | — |
-| 4 | Transport | End-to-end delivery | Segment/Datagram | Port |
-| 3 | Network | Routing & logical addressing | Packet | IP |
-| 2 | Data Link | Framing & MAC addressing | Frame | MAC |
-| 1 | Physical | Bit transmission | Bits | — |
-
-### OSI Encapsulation
-
-When data travels from the sender's application toward the physical network:
-
-```
-Data → Segment → Packet → Frame → Bits
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                     PROTOCOL ELEMENTS                       │
+├───────────────────┬───────────────────┬─────────────────────┤
+│      SYNTAX       │     SEMANTICS     │       TIMING        │
+├───────────────────┼───────────────────┼─────────────────────┤
+│ Data Format,      │ Meaning of bits,  │ Transmission speed, │
+│ Field layout,     │ Actions triggered │ Sequencing,         │
+│ Header sizes      │ by control flags  │ Timeout & flow ctrl │
+└───────────────────┴───────────────────┴─────────────────────┘
 ```
 
-At the receiver:
+1. **Syntax:** Dictates data format, field sizes, bit positions, and endianness (e.g., first 4 bits of IPv4 header define IP Version).
+2. **Semantics:** Dictates interpretation of control fields and what corrective action is required (e.g., `SYN` flag initiates 3-way handshake; `RST` tears down socket).
+3. **Timing:** Governs transmission clocking, transmission rate adaptation, and retransmission timeout intervals (e.g., TCP Sliding Window Flow Control).
 
+---
+
+## 12. OSI 7-Layer Reference Model
+
+Developed by the **International Organization for Standardization (ISO)**, the Open Systems Interconnection (OSI) model provides an architectural framework dividing network communication into 7 distinct functional layers.
+
+![OSI 7-Layer Reference Model with Protocols & PDUs](subjects/computer-networks/images/osi-7-layer-model.jpg)
+
+### Detailed Layer Breakdown
+
+```text
+Layer 7: APPLICATION   ─── Network APIs, Human-Computer Interface (HTTP, DNS, SSH)
+Layer 6: PRESENTATION  ─── Data Representation, Encryption, Compression (TLS, JSON, JPEG)
+Layer 5: SESSION       ─── Dialog Management, Checkpointing, Session Tokens (RPC, NetBIOS)
+Layer 4: TRANSPORT     ─── End-to-End Reliability, Port Multiplexing (TCP, UDP)
+Layer 3: NETWORK       ─── Logical IP Addressing, Routing & Forwarding (IPv4, IPv6, ICMP)
+Layer 2: DATA LINK     ─── Physical MAC Addressing, Framing & Error Check (Ethernet, Wi-Fi)
+Layer 1: PHYSICAL      ─── Bit Transmission, Signaling & Physical Media (Voltages, Fiber, RF)
 ```
-Bits → Frame → Packet → Segment → Data
-```
 
-### Layer-to-Layer Communication
+> **Mnemonic (Top-Down):** **A**ll **P**eople **S**eem **T**o **N**eed **D**ata **P**rocessing
+>
+> **Mnemonic (Bottom-Up):** **P**lease **D**o **N**ot **T**hrow **S**ausage **P**izza **A**way
 
-Each layer communicates **logically** with its corresponding layer on the other device using its protocol.
+---
 
-```
-Computer A                 Computer B
+### Complete OSI Layer Specification
 
-Application  ←──────────→  Application
-Transport    ←──────────→  Transport
-Network      ←──────────→  Network
-Data Link    ←──────────→  Data Link
-Physical     ←──────────→  Physical
-```
+| Layer # | Layer Name | Protocol Data Unit (PDU) | Primary Addressing | Core Responsibilities | Typical Protocols / Standards |
+|---|---|---|---|---|---|
+| **7** | **Application** | Data / Message | User / Process ID | User interface, application network services | HTTP, HTTPS, DNS, SMTP, FTP, SSH |
+| **6** | **Presentation** | Data | — | Syntax formatting, TLS encryption/decryption, gzip compression | SSL/TLS, ASCII, UTF-8, JPEG, MPEG |
+| **5** | **Session** | Data | Session ID | Session establishment, maintenance, synchronization checkpoints | NetBIOS, RPC, Sockets, PPTP |
+| **4** | **Transport** | **Segment** (TCP) / **Datagram** (UDP) | **Port Number** (16-bit) | End-to-end delivery, flow control, error recovery, segmentation | TCP, UDP, QUIC, SCTP |
+| **3** | **Network** | **Packet** | **IP Address** (32-bit/128-bit) | Logical addressing, inter-network packet routing, path determination | IPv4, IPv6, ICMP, OSPF, BGP |
+| **2** | **Data Link** | **Frame** | **MAC Address** (48-bit) | Node-to-node framing, physical MAC addressing, CRC error detection | Ethernet (802.3), Wi-Fi (802.11), PPP |
+| **1** | **Physical** | **Bits** | Physical Pin / Frequency | Electrical signal encoding, clock synchronization, raw bitstream | RS-232, 1000BASE-T, Fiber, Radio (RF) |
 
-But physically, data travels **down** the sender's layers and **up** the receiver's layers.
+---
 
 ## 13. TCP/IP Protocol Suite
 
-### What is TCP/IP?
+The **TCP/IP Model (Internet Protocol Suite)** is the practical, 4-layer architectural standard upon which the global Internet is built.
 
-TCP/IP stands for **Transmission Control Protocol / Internet Protocol**. It is a collection of protocols used for communication across interconnected networks and forms the **foundation of the Internet**.
+![TCP/IP 4-Layer Protocol Suite](subjects/computer-networks/images/tcpip-4-layer-model.jpg)
 
-### TCP/IP Layers
+### The 4 Architectural Layers
 
-```
-4  Application
-3  Transport
-2  Internet
-1  Network Access
-```
+1. **Application Layer (L4):** Combines OSI Layers 5, 6, and 7. Directly supports end-user network applications (HTTP, DNS, SMTP, SSH).
+2. **Transport Layer (L3):** Provides host-to-host process communication over TCP (reliable, connection-oriented) or UDP (fast, connectionless).
+3. **Internet Layer (L2):** Handles IP logical addressing, packet routing, and fragmentation across network boundaries using the **Internet Protocol (IP)**.
+4. **Network Access / Link Layer (L1):** Combines OSI Layers 1 and 2. Encompasses physical drivers, network adapters, and protocols governing transmission across local network media (Ethernet, Wi-Fi).
 
-### Layer 4 — Application Layer
+---
 
-Provides network services to applications. Combines functions from OSI's Application, Presentation, and Session layers.
+### OSI Model vs TCP/IP Model Mapping & Comparison
 
-**Examples:** HTTP, FTP, DNS, SMTP
+![OSI Model vs TCP/IP Model Comparison](subjects/computer-networks/images/osi-vs-tcpip.jpg)
 
-### Layer 3 — Transport Layer
-
-Provides **end-to-end communication** between applications.
-
-**TCP:**
-- Connection-oriented
-- Reliable
-- Ordered delivery
-- Flow/error control mechanisms
-
-**UDP:**
-- Connectionless
-- Lightweight
-- No connection establishment
-- Does not provide TCP's reliability mechanisms
-
-**PDU:** TCP → Segment · UDP → Datagram
-
-### Layer 2 — Internet Layer
-
-Responsible for **logical addressing and packet delivery** between networks.
-
-**Main protocol:** IP
-
-**Functions:** Logical addressing, packet forwarding, routing-related delivery.
-
-**PDU:** Packet
-
-### Layer 1 — Network Access Layer
-
-Handles communication over the **local network and physical medium**. Corresponds to OSI's Data Link + Physical layers.
-
-**Functions:** Framing, local delivery, media access, physical transmission.
-
-### TCP/IP Layer Summary
-
-| TCP/IP Layer | Main Function | Examples |
-|-------------|---------------|----------|
-| Application | Application/network services | HTTP, FTP, DNS |
-| Transport | End-to-end communication | TCP, UDP |
-| Internet | IP addressing and packet delivery | IP |
-| Network Access | Local/physical communication | Ethernet, Wi-Fi |
-
-### OSI ↔ TCP/IP Mapping
-
-![OSI vs TCP/IP Comparison](assets/images/osi-vs-tcpip.png)
-
-```
-OSI                         TCP/IP
-
-Application ───────┐
-Presentation ──────┼────→ Application
-Session ───────────┘
-
-Transport ──────────────→ Transport
-
-Network ────────────────→ Internet
-
-Data Link ────────┐
-Physical ─────────┴────→ Network Access
+```text
+OSI 7-Layer Model                    TCP/IP 4-Layer Architecture
+┌─────────────────────────┐
+│ Layer 7: Application    │ ──┐
+├─────────────────────────┤   │
+│ Layer 6: Presentation   │ ──┼───→  Layer 4: APPLICATION
+├─────────────────────────┤   │      (HTTP, DNS, SSH, SMTP)
+│ Layer 5: Session        │ ──┘
+├─────────────────────────┤
+│ Layer 4: Transport      │ ──────→  Layer 3: TRANSPORT (TCP, UDP)
+├─────────────────────────┤
+│ Layer 3: Network        │ ──────→  Layer 2: INTERNET (IP, ICMP, ARP)
+├─────────────────────────┤
+│ Layer 2: Data Link      │ ──┐
+├─────────────────────────┤   └───→  Layer 1: NETWORK ACCESS
+│ Layer 1: Physical       │          (Ethernet, Wi-Fi, Fiber, MAC)
+└─────────────────────────┘
 ```
 
-**Remember:**
-- OSI 7 + 6 + 5 → TCP/IP Application
-- OSI 4 → TCP/IP Transport
-- OSI 3 → TCP/IP Internet
-- OSI 2 + 1 → TCP/IP Network Access
+### Comprehensive Comparison Matrix
 
-### OSI vs TCP/IP
+| Aspect | OSI Reference Model | TCP/IP Model |
+|---|---|---|
+| **Primary Nature** | Theoretical reference model developed by ISO | Practical implementation standard of the Internet |
+| **Total Layers** | **7 Layers** | **4 Layers** |
+| **Application Layer** | Partitioned into Application, Presentation, Session | Unified into a single Application layer |
+| **Network & Lower Layers** | Separate Network, Data Link, and Physical layers | Combined as Internet and Network Access layers |
+| **Protocol Independence** | Strict boundary separation; model designed before protocols | Protocols were created first; model designed around them |
+| **Transport Reliability** | Supports both connection-oriented & connectionless | Supports connection-oriented (TCP) & connectionless (UDP) |
+| **Industry Adoption** | Educational & conceptual architectural guide | Dominant commercial networking standard worldwide |
 
-| Feature | OSI | TCP/IP |
-|---------|-----|--------|
-| **Full name** | Open Systems Interconnection | Transmission Control Protocol/Internet Protocol |
-| **Layers** | 7 | 4 |
-| **Nature** | Reference model | Protocol suite |
-| **Application layers** | 3 separate layers | Combined |
-| **Transport** | Transport | Transport |
-| **Network** | Network | Internet |
-| **Lower layers** | Separate (DL + Physical) | Combined as Network Access |
-| **Practical role** | Mainly conceptual/reference | Foundation of Internet networking |
+---
 
-## 14. Key Concepts & Connections
+## 14. Exam Quick-Reference & High-Yield Summary
 
-### Device → Address → Layer
+### ⚡ Layer vs Identifier vs Protocol Data Unit (PDU)
 
-| Device | Address/Identifier | Main Layer |
-|--------|-------------------|------------|
-| Hub | None | Physical |
-| Switch | MAC | Data Link |
-| Router | IP | Network |
-| Application | Port / domain | Higher layers |
+| Layer | Protocol Data Unit (PDU) | Addressing Scheme | Hardware Device |
+|---|---|---|---|
+| **Application** | Data / Message | Process ID / Port / URL | Gateway / Application Firewall |
+| **Transport** | **Segment** (TCP) / **Datagram** (UDP) | **Port Number** (`0` – `65535`) | L4 Load Balancer |
+| **Network** | **Packet** | **IP Address** (e.g. `192.168.1.1`) | **Router** / Layer 3 Switch |
+| **Data Link** | **Frame** | **MAC Address** (`00:1A:2B:3C:4D:5E`) | **Switch** / Bridge / NIC |
+| **Physical** | **Bits** (Electrical / Optical pulses) | Physical Pins / Frequencies | **Hub** / Repeater / Media Converter |
 
-> **Core idea:** MAC = local/link-level · IP = network-level · Port = application/process-level
+---
 
-### Data Units — The Chain
+### Core Distinctions to Ace in Exams
 
-```
-Application      → DATA
-Transport        → SEGMENT / DATAGRAM
-Network          → PACKET
-Data Link        → FRAME
-Physical         → BITS
-```
-
-> **Memory:** Data → Segment → Packet → Frame → Bits
-
-### Three Things You Must Never Mix Up
-
-| Concept | Meaning |
-|---------|---------|
-| **Service** | What a layer provides |
-| **Interface** | How the layer above accesses that service |
-| **Protocol** | Rules used by corresponding entities to communicate |
-
-## 15. Exam Preparation
-
-### Important Definitions
-
-You should be able to write these without thinking:
-
-- **Computer Network:** A collection of interconnected devices that communicate to exchange data and share resources and services.
-- **Protocol:** A set of rules and conventions governing communication between network devices.
-- **Topology:** The arrangement of network devices and communication links.
-- **LAN:** A network covering a limited geographical area such as a building or campus.
-- **Router:** A device that connects different networks and forwards packets using IP addresses.
-- **Switch:** A device that connects network devices and forwards frames using MAC addresses.
-- **OSI Model:** A seven-layer reference model that organizes network communication into seven functional layers.
-- **TCP/IP:** A protocol suite used for communication across interconnected networks, forming the foundation of Internet communication.
-- **Encapsulation:** The process of adding protocol control information as data moves down through network layers.
-- **Decapsulation:** The process of processing and removing protocol control information as data moves up through network layers.
-
-### High-Value Differences
-
-**Simplex vs Half-Duplex vs Full-Duplex** — One-way · Two-way one-at-a-time · Two-way simultaneously
-
-**Point-to-Point vs Multipoint** — Dedicated link between two devices · Shared link with multiple devices
-
-**Unicast vs Multicast vs Broadcast** — 1→1 · 1→selected group · 1→all
-
-**Hub vs Switch vs Router** — Broadcasts · Forwards using MAC · Forwards between networks using IP
-
-**Internet vs Intranet vs Extranet** — Public/global · Private/internal · Private + controlled external access
-
-**Client-Server vs P2P** — Centralized · Distributed/peer-based
-
-**Physical vs Logical Topology** — Actual arrangement · Logical flow of data
-
-### Likely 2-Mark Questions
-
-1. Define computer network.
-2. What is a protocol?
-3. Define LAN.
-4. What is a WAN?
-5. What is a network topology?
-6. Define simplex communication.
-7. What is half-duplex?
-8. What is full-duplex?
-9. What is unicast / multicast / broadcast?
-10. What is a hub / switch / router / NIC?
-11. What is an OSI model?
-12. Name the seven OSI layers.
-13. Name the four TCP/IP layers.
-14. What is encapsulation / decapsulation?
-15. What is a protocol's syntax / semantics / timing?
-
-### Likely 5-Mark Questions
-
-**Q1.** Explain different types of network topologies. *(Definition + Bus/Star/Ring/Mesh/Tree/Hybrid + advantages/disadvantages)*
-
-**Q2.** Explain Hub, Switch and Router. *(Definition + function + address + layer + comparison)*
-
-**Q3.** Explain communication modes. *(Simplex + Half-duplex + Full-duplex + diagram + examples)*
-
-**Q4.** Explain the OSI model. *(Definition + purpose + 7 layers + functions + PDUs)*
-
-**Q5.** Explain TCP/IP protocol suite. *(Definition + 4 layers + functions + examples)*
-
-**Q6.** Explain protocol elements. *(Syntax + Semantics + Timing)*
-
-### Likely 10-Mark Questions
-
-**Q1.** Explain the OSI model in detail and compare it with TCP/IP.
-> Structure: Introduction → 7 OSI layers → functions → PDU → TCP/IP → mapping → differences
-
-**Q2.** Explain computer networks, their types, hardware and topologies.
-> Structure: Definition → purposes → PAN/LAN/MAN/WAN → devices → topologies → comparison
-
-**Q3.** Explain layered network architecture with encapsulation and decapsulation.
-> Structure: Layered architecture → services → interfaces → protocols → encapsulation → decapsulation → diagram
-
-### MCQ-Level Facts
-
-- OSI has **7** layers. TCP/IP has **4** layers.
-- Router → **Network Layer**. Switch → **Data Link Layer**. Hub → **Physical Layer**.
-- IP address → **Network layer**. MAC address → **Data Link layer**. Port number → **Transport layer**.
-- Frame → **Data Link**. Packet → **Network**. Segment → **TCP Transport**. Datagram → **UDP Transport**. Bits → **Physical**.
-- Simplex → **one-way**. Half-duplex → **two-way, one at a time**. Full-duplex → **two-way simultaneously**.
-- Unicast → **one-to-one**. Multicast → **one-to-selected group**. Broadcast → **one-to-all**.
-- Syntax → **structure**. Semantics → **meaning**. Timing → **when/how fast**.
-
-### ⚡ 2-Minute Unit 1 Revision
-
-| Concept | Key Points |
-|---------|------------|
-| **Network** | Devices + communication + data/resource sharing |
-| **Communication** | Sender + Receiver + Message + Medium + Protocol |
-| **Direction** | Simplex → Half-duplex → Full-duplex |
-| **Delivery** | Unicast → Multicast → Broadcast |
-| **Size** | PAN → LAN → MAN → WAN |
-| **Architecture** | Hardware + Software + Layers + Services + Interfaces + Protocols |
-| **Devices** | Hub → Switch → Router |
-| **Topologies** | Bus → Star → Ring → Mesh → Tree → Hybrid |
-| **Protocol** | Syntax + Semantics + Timing |
-| **OSI** | Application → Presentation → Session → Transport → Network → Data Link → Physical |
-| **TCP/IP** | Application → Transport → Internet → Network Access |
-| **Data journey** | Data → Segment → Packet → Frame → Bits |
-| **Addressing** | Port → MAC → IP |
-| **Core idea** | Encapsulation going down, decapsulation coming up |
+> **1. Encapsulation vs Decapsulation:** Encapsulation appends headers moving **down** the stack ($7 \to 1$); Decapsulation parses and strips headers moving **up** the stack ($1 \to 7$).
+>
+> **2. Service vs Protocol:** A *Service* is what a layer provides to the layer above it; a *Protocol* is the formal rules used by peer entities across the network.
+>
+> **3. Hub vs Switch vs Router:** Hub broadcasts raw bits at Layer 1; Switch unicasts frames using Layer 2 MAC addresses; Router forwards packets between subnets using Layer 3 IP addresses.
+>
+> **4. Simplex vs Half-Duplex vs Full-Duplex:** Simplex is 1-way; Half-Duplex is 2-way alternating; Full-Duplex is 2-way simultaneous.

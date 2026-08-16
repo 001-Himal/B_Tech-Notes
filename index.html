@@ -15,6 +15,9 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Reading Progress Bar -->
+  <div class="reading-progress-bar" id="reading-progress-bar"></div>
+
   <!-- Loading bar -->
   <div class="loading-bar" id="loading-bar"></div>
 
@@ -28,7 +31,10 @@
           <line x1="3" y1="18" x2="21" y2="18"></line>
         </svg>
       </button>
-      <a href="#/" class="logo" id="logo">BTech Notes</a>
+      <a href="#/" class="logo" id="logo">
+        <span>BTech Notes</span>
+        <span class="logo-badge">Docs</span>
+      </a>
     </div>
     <div class="header-right">
       <button class="search-trigger" id="search-trigger" aria-label="Search notes">
@@ -99,6 +105,21 @@
       <div class="search-results" id="search-results">
         <div class="search-empty">Start typing to search across all notes</div>
       </div>
+    </div>
+  </div>
+
+  <!-- Image Modal / Lightbox -->
+  <div class="image-modal" id="image-modal" role="dialog" aria-modal="true" aria-label="Expanded Image Preview">
+    <div class="image-modal-backdrop" id="image-modal-backdrop"></div>
+    <div class="image-modal-container">
+      <button class="image-modal-close" id="image-modal-close" aria-label="Close image preview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <img src="" alt="" class="image-modal-img" id="image-modal-img">
+      <div class="image-modal-caption" id="image-modal-caption"></div>
     </div>
   </div>
 
