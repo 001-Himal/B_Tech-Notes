@@ -1,0 +1,16 @@
+{
+  "subjects": [
+    {
+      "id": "computer-networks",
+      "name": "Computer Networks",
+      "units": [
+        { "id": "unit-1", "title": "Unit 1 — Introduction & Network Models" },
+        { "id": "unit-2", "title": "Unit 2 — Physical & Data Link Layer" },
+        { "id": "unit-3", "title": "Unit 3 — MAC & Network Layer" },
+        { "id": "unit-4", "title": "Unit 4 — Routing & IP" },
+        { "id": "unit-5", "title": "Unit 5 — Transport Layer" },
+        { "id": "unit-6", "title": "Unit 6 — Application & Wireless Networks" }
+      ]
+    }
+  ]
+}
